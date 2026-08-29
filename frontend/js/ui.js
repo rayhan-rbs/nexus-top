@@ -2,6 +2,10 @@
  * UI Controller — Handles all UI rendering
  */
 
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:3000' 
+    : 'https://nexustop-api.onrender.com';
+
 // ===== RENDER GAMES =====
 // ===== RENDER GAMES =====
 function renderGames(games) {
