@@ -396,6 +396,11 @@
 
   <script src="js/authService.js"></script>
   <script>
+
+    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:3000' 
+    : 'https://nexustop-api.onrender.com';
+
     // Check admin
     const user = authService.getCurrentUser();
     if (!user || user.role !== 'admin') {
@@ -404,7 +409,7 @@
     }
 
     let editingGameId = null;
-    const API_URL = '${API_BASE_URL}`/api';
+    const API_URL = API_BASE_URL + '/api';
 
     // Load all games
     async function loadGames() {
