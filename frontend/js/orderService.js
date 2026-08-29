@@ -4,7 +4,7 @@
 
 class OrderService {
   constructor() {
-    this.API_URL = 'http://localhost:3000/api/orders';
+    this.API_URL = '${API_BASE_URL}`/api/orders';
   }
 
   // ===== CREATE ORDER =====

@@ -7,7 +7,7 @@ class DataService {
     this.cache = null;
     this.cacheTime = 0;
     this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-    this.API_URL = 'http://localhost:3000/api/games'; // Backend API
+    this.API_URL = '${API_BASE_URL}`/api/games'; // Backend API
     this.JSON_FALLBACK = 'data/games.json'; // Local JSON fallback
     this.useAPI = true; // Set to false if backend not running
   }
@@ -78,7 +78,7 @@ class DataService {
       // First try API
       if (this.useAPI) {
         try {
-          const res = await fetch(`http://localhost:3000/api/games/${id}`);
+          const res = await fetch(`${API_BASE_URL}`/api/games/${id}`);
           const data = await res.json();
           if (data.success && data.game) {
             console.log('✅ Game loaded from API:', data.game.title);

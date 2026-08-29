@@ -19,7 +19,7 @@ function renderGames(games) {
     // 👈 ইমেইজ থাকলে ইমেইজ দেখাবে, না থাকলে গ্র্যাডিয়েন্ট দেখাবে
     let bgStyle = g.color;
     if (g.image) {
-      const imageUrl = g.image.startsWith('http') ? g.image : `http://localhost:3000${g.image}`;
+      const imageUrl = g.image.startsWith('http') ? g.image : `${API_BASE_URL}`${g.image}`;
       bgStyle = `linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.4) 100%), url('${imageUrl}')`;
     }
     
