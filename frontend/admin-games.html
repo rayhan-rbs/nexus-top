@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Management — NexusTop Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .admin-games-container {
+      min-height: 100vh;
+      padding: 120px 20px 60px;
+    }
+    .admin-games-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .page-header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+    }
+    .btn-add-game {
+      padding: 12px 24px;
+      background: var(--grad);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-add-game:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 40%, transparent);
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    .game-management-card {
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .game-management-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px var(--shadow);
+    }
+    .game-card-header {
+      padding: 20px;
+      background: var(--glass);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    .game-card-info {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .game-card-icon {
+      font-size: 48px;
+    }
+    .game-card-details h3 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    .game-card-details p {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .game-card-status {
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-active { background: rgba(16,185,129,0.2); color: #10B981; }
+    .status-inactive { background: rgba(239,68,68,0.2); color: #EF4444; }
+    .status-maintenance { background: rgba(245,158,11,0.2); color: #F59E0B; }
+    .game-card-body {
+      padding: 20px;
+    }
+    .game-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .game-stat {
+      text-align: center;
+      padding: 10px;
+      background: var(--glass);
+      border-radius: 12px;
+    }
+    .game-stat .value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+    .game-stat .label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+    .game-card-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .game-action-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-edit {
+      background: var(--grad);
+      color: white;
+    }
+    .btn-edit:hover {
+      transform: scale(1.02);
+    }
+    .btn-packages {
+      background: var(--glass);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+    }
+    .btn-packages:hover {
+      border-color: var(--secondary);
+    }
+    .btn-delete {
+      background: rgba(239,68,68,0.1);
+      color: #EF4444;
+      border: 1px solid #EF4444;
+    }
+    .btn-delete:hover {
+      background: #EF4444;
+      color: white;
+    }
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+    }
+    .modal-content {
+      position: relative;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 30px 80px var(--shadow);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    .modal-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+    }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .modal-close:hover {
+      background: #EF4444;
+      color: white;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- IMPROVED NAVIGATION WITH DROPDOWN -->
+  <nav class="admin-nav">
+    <div class="logo" onclick="window.location.href='admin.html'">NEXUS<span>TOP</span></div>
+    
+    <ul class="admin-nav-links" id="navLinks">
+      <li><a class="admin-nav-link" href="admin.html">📊 Dashboard</a></li>
+      <li><a class="admin-nav-link active" href="admin-games.html">🎮 Games</a></li>
+      <li><a class="admin-nav-link" href="admin.html" onclick="document.querySelector('[data-filter=pending_verification]')?.click();return false;">✅ Verify</a></li>
+    </ul>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+
+    <!-- User Dropdown -->
+    <div class="dropdown" id="userDropdown">
+      <button class="dropdown-toggle" onclick="toggleDropdown()">
+        <span id="userAvatar" style="width:24px;height:24px;border-radius:50%;background:var(--grad);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700">A</span>
+        <span id="userName">Admin</span>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-user">
+          <div class="avatar" id="avatarLarge">A</div>
+          <div class="info">
+            <div class="name" id="dropdownName">Admin</div>
+            <div class="role">Administrator</div>
+          </div>
+        </div>
+        <a class="dropdown-item" href="admin.html">
+          <span class="icon">📊</span>
+          <span class="label">Dashboard</span>
+        </a>
+        <a class="dropdown-item" href="admin-games.html">
+          <span class="icon">🎮</span>
+          <span class="label">Manage Games</span>
+        </a>
+        <a class="dropdown-item" href="index.html">
+          <span class="icon">🌐</span>
+          <span class="label">View Website</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="authService.logout()">
+          <span class="icon">🚪</span>
+          <span class="label">Logout</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-games-container">
+    <div class="admin-games-wrapper">
+      <div class="page-header">
+        <div>
+          <h1>🎮 Game Management</h1>
+          <p style="color:var(--text-dim)">Add, edit, and manage all games</p>
+        </div>
+        <button class="btn-add-game" onclick="openAddGameModal()">
+          <span>➕</span> Add New Game
+        </button>
+      </div>
+
+      <div id="gamesList" class="games-grid">
+        <p style="text-align:center;padding:60px;color:var(--text-dim);grid-column:1/-1">Loading games...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Game Modal (Styled) -->
+  <div class="admin-modal" id="gameModal">
+    <div class="admin-modal-overlay" onclick="closeGameModal()"></div>
+    <div class="admin-modal-content">
+      <div class="admin-modal-header">
+        <h2 id="modalTitle">Add New Game</h2>
+        <button class="admin-modal-close" onclick="closeGameModal()">✕</button>
+      </div>
+      <form class="admin-form" id="gameForm">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Game ID <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="gameId" placeholder="pubg-mobile" required>
+            <span class="admin-form-help">Unique identifier (lowercase, no spaces)</span>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Title <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="gameTitle" placeholder="PUBG Mobile" required>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Tag <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="gameTag" placeholder="Battle Royale" required>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Category <span class="required">*</span></label>
+            <select class="admin-form-select" id="gameCategory" required>
+              <option value="mobile">📱 Mobile</option>
+              <option value="pc">💻 PC</option>
+              <option value="console">🎮 Console</option>
+              <option value="mmorpg">⚔️ MMORPG</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Icon (Emoji) <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="gameIcon" placeholder="💎" required>
+            <span class="admin-form-help">Use emoji like 💎, 🎮, ⚔️</span>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Currency <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="gameCurrency" placeholder="UC" required>
+            <span class="admin-form-help">In-game currency name</span>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Color Gradient</label>
+          <input type="text" class="admin-form-input" id="gameColor" placeholder="linear-gradient(135deg,#7C3AED,#06B6D4)" value="linear-gradient(135deg,#7C3AED,#06B6D4)" oninput="updateColorPreview()">
+          <div class="color-preview" id="colorPreview" style="background:linear-gradient(135deg,#7C3AED,#06B6D4)"></div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Game Cover Image</label>
+          <input type="file" class="admin-form-input" id="gameImage" accept="image/png, image/jpeg, image/webp">
+          <span class="admin-form-help">Max 5MB. Formats: JPG, PNG, WEBP</span>
+          <img id="imagePreview" src="" style="max-width: 100%; margin-top: 10px; border-radius: 12px; display: none; border: 1px solid var(--glass-border);">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Description <span class="required">*</span></label>
+          <textarea class="admin-form-textarea" id="gameDescription" rows="4" placeholder="Game description..." required></textarea>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Rating</label>
+            <input type="number" class="admin-form-input" id="gameRating" placeholder="4.5" min="0" max="5" step="0.1" value="4.5">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Players</label>
+            <input type="text" class="admin-form-input" id="gamePlayers" placeholder="50M+" value="1M+">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Status</label>
+          <select class="admin-form-select" id="gameStatus">
+            <option value="active">✅ Active</option>
+            <option value="inactive">❌ Inactive</option>
+            <option value="maintenance">🔧 Maintenance</option>
+          </select>
+        </div>
+        <button type="submit" class="admin-form-submit" id="submitGameBtn">
+          <span>➕</span> Add Game
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/authService.js"></script>
+  <script>
+    // Check admin
+    const user = authService.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      alert('⚠️ Access denied! Admin only.');
+      window.location.href = 'index.html';
+    }
+
+    let editingGameId = null;
+    const API_URL = 'http://localhost:3000/api';
+
+    // Load all games
+    async function loadGames() {
+      try {
+        const token = authService.getToken();
+        const res = await fetch(`${API_URL}/games/admin/all`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        renderGames(data.games);
+      } catch (err) {
+        console.error('Load games error:', err);
+        document.getElementById('gamesList').innerHTML = 
+          '<p style="text-align:center;padding:60px;color:#EF4444;grid-column:1/-1">❌ Error: ' + err.message + '</p>';
+      }
+    }
+
+    // Render games
+    function renderGames(games) {
+      const container = document.getElementById('gamesList');
+
+      if (games.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:60px;color:var(--text-dim);grid-column:1/-1">No games found. Click "Add New Game" to start.</p>';
+        return;
+      }
+
+      container.innerHTML = games.map(game => `
+        <div class="game-management-card">
+          <div class="game-card-header">
+            <div class="game-card-info">
+              <div class="game-card-icon">${game.icon}</div>
+              <div class="game-card-details">
+                <h3>${game.title}</h3>
+                <p>${game.tag} • ${game.category}</p>
+              </div>
+            </div>
+            <span class="game-card-status status-${game.status}">${game.status}</span>
+          </div>
+          <div class="game-card-body">
+            <div class="game-stats">
+              <div class="game-stat">
+                <div class="value">${game.packages.length}</div>
+                <div class="label">Packages</div>
+              </div>
+              <div class="game-stat">
+                <div class="value">${game.orderCount || 0}</div>
+                <div class="label">Orders</div>
+              </div>
+              <div class="game-stat">
+                <div class="value">⭐${game.rating}</div>
+                <div class="label">Rating</div>
+              </div>
+            </div>
+            <div class="game-card-actions">
+              <button class="game-action-btn btn-edit" onclick="editGame('${game.gameId}')">✏️ Edit</button>
+              <button class="game-action-btn btn-packages" onclick="managePackages('${game.gameId}')">💎 Packages</button>
+              <button class="game-action-btn btn-delete" onclick="deleteGame('${game.gameId}', '${game.title}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Open add game modal
+    function openAddGameModal() {
+      editingGameId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Game';
+      document.getElementById('submitGameBtn').textContent = 'Add Game';
+      document.getElementById('gameForm').reset();
+      document.getElementById('gameModal').classList.add('active');
+      document.getElementById('submitGameBtn').innerHTML = '<span>➕</span> Add Game';
+    }
+
+    // Close modal
+    function closeGameModal() {
+      document.getElementById('gameModal').classList.remove('active');
+    }
+
+    // Edit game
+    async function editGame(gameId) {
+      try {
+        const token = authService.getToken();
+        const res = await fetch(`${API_URL}/games/${gameId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        const game = data.game;
+        editingGameId = gameId;
+
+        document.getElementById('modalTitle').textContent = 'Edit Game';
+        document.getElementById('submitGameBtn').textContent = 'Update Game';
+
+        // Fill form
+        document.getElementById('gameId').value = game.gameId;
+        document.getElementById('gameTitle').value = game.title;
+        document.getElementById('gameTag').value = game.tag;
+        document.getElementById('gameCategory').value = game.category;
+        document.getElementById('gameIcon').value = game.icon;
+        document.getElementById('gameCurrency').value = game.currency;
+        document.getElementById('gameColor').value = game.color;
+        document.getElementById('gameDescription').value = game.description;
+        document.getElementById('gameRating').value = game.rating;
+        document.getElementById('gamePlayers').value = game.players;
+        document.getElementById('gameStatus').value = game.status;
+        document.getElementById('submitGameBtn').innerHTML = '<span>💾</span> Update Game';
+        document.getElementById('gameModal').classList.add('active');
+      } catch (err) {
+        alert('Error loading game: ' + err.message);
+      }
+    }
+
+    // Image Preview Logic
+    document.getElementById('gameImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('imagePreview');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Form Submit Logic
+    document.getElementById('gameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitGameBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳</span> Saving...';
+
+      // 👈 FormData ব্যবহার করতে হবে যখন ফাইল আপলোড করা হয়
+      const formData = new FormData();
+      formData.append('gameId', document.getElementById('gameId').value);
+      formData.append('title', document.getElementById('gameTitle').value);
+      formData.append('tag', document.getElementById('gameTag').value);
+      formData.append('category', document.getElementById('gameCategory').value);
+      formData.append('icon', document.getElementById('gameIcon').value);
+      formData.append('currency', document.getElementById('gameCurrency').value);
+      formData.append('color', document.getElementById('gameColor').value);
+      formData.append('description', document.getElementById('gameDescription').value);
+      formData.append('rating', parseFloat(document.getElementById('gameRating').value));
+      formData.append('players', document.getElementById('gamePlayers').value);
+      formData.append('status', document.getElementById('gameStatus').value);
+
+      const imageFile = document.getElementById('gameImage').files[0];
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      try {
+        const token = authService.getToken();
+        let url, method;
+
+        if (editingGameId) {
+          url = `${API_URL}/games/admin/${editingGameId}`;
+          method = 'PUT';
+        } else {
+          url = `${API_URL}/games/admin`;
+          method = 'POST';
+        }
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // ⚠️ গুরুত্বপূর্ণ: FormData ব্যবহার করলে 'Content-Type' হেডার ম্যানুয়ালি সেট করবেন না!
+            // ব্রাউজার অটোমেটিক সঠিক boundary সহ সেট করে দেয়।
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        alert(`✅ Game ${editingGameId ? 'updated' : 'added'} successfully!`);
+        closeGameModal();
+        loadGames();
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = editingGameId ? '<span>💾</span> Update Game' : '<span>➕</span> Add Game';
+      }
+    });
+
+    // Delete game
+    async function deleteGame(gameId, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone!`)) return;
+
+      try {
+        const token = authService.getToken();
+        const res = await fetch(`${API_URL}/games/admin/${gameId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        alert('✅ Game deleted successfully!');
+        loadGames();
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+      }
+    }
+
+    // Manage packages (redirect to packages page)
+    function managePackages(gameId) {
+      window.location.href = `admin-packages.html?gameId=${gameId}`;
+    }
+
+    // Initialize
+    loadGames();
+
+    // Particles
+    const particlesContainer = document.getElementById('particles');
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.animationDuration = (Math.random()*10+10)+'s';
+      p.style.animationDelay = Math.random()*10+'s';
+      p.style.opacity = Math.random()*0.5+0.2;
+      particlesContainer.appendChild(p);
+    }
+
+    // Dropdown functions
+    function toggleDropdown() {
+      document.getElementById('userDropdown').classList.toggle('open');
+    }
+
+    function closeDropdown() {
+      document.getElementById('userDropdown').classList.remove('open');
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('navLinks').classList.toggle('mobile-open');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        closeDropdown();
+      }
+    });
+
+    // Color preview
+    function updateColorPreview() {
+      const color = document.getElementById('gameColor').value;
+      document.getElementById('colorPreview').style.background = color;
+    }
+
+    // Set user info
+    if (user) {
+      const initial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userAvatar').textContent = initial;
+      document.getElementById('avatarLarge').textContent = initial;
+      document.getElementById('dropdownName').textContent = user.name;
+    }
+
+  </script>
+</body>
+</html>

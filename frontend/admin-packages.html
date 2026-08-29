@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Package Management — NexusTop Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .pkg-container { min-height: 100vh; padding: 120px 20px 60px; }
+    .pkg-wrapper { max-width: 1200px; margin: 0 auto; }
+    .pkg-header { margin-bottom: 40px; }
+    .pkg-header h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; margin-bottom: 10px; }
+    .btn-add-game {
+      padding: 12px 24px;
+      background: var(--grad);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-add-game:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 40%, transparent);
+    }
+    .game-info-bar {
+      display: flex; align-items: center; gap: 20px;
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 20px 25px; margin-bottom: 30px;
+    }
+    .game-info-bar .icon { font-size: 48px; }
+    .game-info-bar .details h3 { font-size: 20px; margin-bottom: 5px; }
+    .game-info-bar .details p { color: var(--text-dim); font-size: 14px; }
+    .pkg-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px; margin-bottom: 30px;
+    }
+    .pkg-manage-card {
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 25px; text-align: center;
+      transition: all 0.3s; position: relative;
+    }
+    .pkg-manage-card:hover {
+      border-color: var(--primary); transform: translateY(-5px);
+      box-shadow: 0 20px 40px var(--shadow);
+    }
+    .pkg-manage-card.popular { border-color: var(--accent); }
+    .pkg-popular-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--grad-2); color: white;
+      padding: 4px 10px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    }
+    .pkg-amount {
+      font-family: 'Orbitron', sans-serif; font-size: 28px;
+      font-weight: 700; margin: 10px 0 5px;
+    }
+    .pkg-currency { color: var(--text-dim); font-size: 14px; margin-bottom: 10px; }
+    .pkg-bonus-text { color: #10B981; font-size: 13px; margin-bottom: 10px; }
+    .pkg-price-display {
+      font-size: 22px; font-weight: 700; color: var(--secondary); margin-bottom: 5px;
+    }
+    .pkg-old-price {
+      font-size: 14px; color: var(--text-dim);
+      text-decoration: line-through; margin-bottom: 15px;
+    }
+    .pkg-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .pkg-action-btn {
+      flex: 1; padding: 10px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.3s; border: none; font-family: inherit;
+    }
+    .pkg-btn-edit { background: var(--grad); color: white; }
+    .pkg-btn-edit:hover { transform: scale(1.03); }
+    .pkg-btn-delete {
+      background: rgba(239,68,68,0.1); color: #EF4444;
+      border: 1px solid #EF4444;
+    }
+    .pkg-btn-delete:hover { background: #EF4444; color: white; }
+    .empty-pkg {
+      text-align: center; padding: 60px 20px;
+      background: var(--bg-2); border: 2px dashed var(--glass-border);
+      border-radius: 20px; grid-column: 1 / -1;
+    }
+    .empty-pkg .icon { font-size: 60px; margin-bottom: 15px; }
+    .empty-pkg h3 { margin-bottom: 10px; }
+    .empty-pkg p { color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav class="admin-nav">
+    <div class="logo" onclick="window.location.href='admin.html'">NEXUS<span>TOP</span></div>
+    <ul class="admin-nav-links">
+      <li><a class="admin-nav-link" href="admin.html">📊 Dashboard</a></li>
+      <li><a class="admin-nav-link" href="admin-games.html">🎮 Games</a></li>
+      <li><a class="admin-nav-link active" href="#">💎 Packages</a></li>
+    </ul>
+    <button class="mobile-menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('mobile-open')">☰</button>
+    <div class="dropdown" id="userDropdown">
+      <button class="dropdown-toggle" onclick="document.getElementById('userDropdown').classList.toggle('open')">
+        <span id="userAvatar" style="width:24px;height:24px;border-radius:50%;background:var(--grad);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700">A</span>
+        <span id="userName">Admin</span>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-user">
+          <div class="avatar" id="avatarLarge">A</div>
+          <div class="info">
+            <div class="name" id="dropdownName">Admin</div>
+            <div class="role">Administrator</div>
+          </div>
+        </div>
+        <a class="dropdown-item" href="admin.html"><span class="icon">📊</span><span class="label">Dashboard</span></a>
+        <a class="dropdown-item" href="admin-games.html"><span class="icon">🎮</span><span class="label">Manage Games</span></a>
+        <a class="dropdown-item" href="index.html"><span class="icon">🌐</span><span class="label">View Website</span></a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="authService.logout()"><span class="icon">🚪</span><span class="label">Logout</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pkg-container">
+    <div class="pkg-wrapper">
+      <!-- Header -->
+      <div class="pkg-header">
+        <button class="back-btn" onclick="window.location.href='admin-games.html'" style="margin-bottom:20px">← Back to Games</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px">
+          <div>
+            <h1>💎 Package Management</h1>
+            <p style="color:var(--text-dim)">Add, edit, and manage top-up packages</p>
+          </div>
+          <button class="btn-add-game" onclick="openAddPackageModal()">
+            <span>➕</span> Add New Package
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Info Bar -->
+      <div class="game-info-bar" id="gameInfoBar">
+        <div class="icon" id="gameIconDisplay">🎮</div>
+        <div class="details">
+          <h3 id="gameTitleDisplay">Loading...</h3>
+          <p id="gameMetaDisplay">Loading game info...</p>
+        </div>
+      </div>
+
+      <!-- Packages Grid -->
+      <div class="pkg-grid" id="packagesGrid">
+        <p style="text-align:center;padding:60px;color:var(--text-dim);grid-column:1/-1">Loading packages...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Package Modal -->
+  <div class="admin-modal" id="packageModal">
+    <div class="admin-modal-overlay" onclick="closePackageModal()"></div>
+    <div class="admin-modal-content" style="max-width:500px">
+      <div class="admin-modal-header">
+        <h2 id="pkgModalTitle">Add New Package</h2>
+        <button class="admin-modal-close" onclick="closePackageModal()">✕</button>
+      </div>
+      <form class="admin-form" id="packageForm">
+        <div class="admin-form-group">
+          <label class="admin-form-label">Package ID</label>
+          <input type="text" class="admin-form-input" id="pkgId" placeholder="Auto-generated (leave empty)">
+          <span class="admin-form-help">Leave empty to auto-generate</span>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Amount <span class="required">*</span></label>
+            <input type="text" class="admin-form-input" id="pkgAmount" placeholder="660" required>
+            <span class="admin-form-help">e.g. 60, 325, 660</span>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Currency</label>
+            <input type="text" class="admin-form-input" id="pkgCurrency" placeholder="UC" readonly>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Bonus Text</label>
+          <input type="text" class="admin-form-input" id="pkgBonus" placeholder="+60 Bonus">
+          <span class="admin-form-help">e.g. +25 Bonus, Starter, Standard</span>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Price (৳) <span class="required">*</span></label>
+            <input type="number" class="admin-form-input" id="pkgPrice" placeholder="890" required min="1">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Old Price (৳)</label>
+            <input type="number" class="admin-form-input" id="pkgOldPrice" placeholder="1050" min="0">
+            <span class="admin-form-help">Leave empty if no discount</span>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label" style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="pkgPopular" style="width:18px;height:18px;cursor:pointer">
+            ⭐ Mark as Popular
+          </label>
+          <span class="admin-form-help">Popular packages get highlighted on the website</span>
+        </div>
+        <button type="submit" class="admin-form-submit" id="submitPkgBtn">
+          <span>➕</span> Add Package
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/authService.js"></script>
+  <script>
+    // Check admin
+    const user = authService.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      alert('⚠️ Access denied! Admin only.');
+      window.location.href = 'index.html';
+    }
+
+    // Set user info
+    if (user) {
+      const initial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userAvatar').textContent = initial;
+      document.getElementById('avatarLarge').textContent = initial;
+      document.getElementById('dropdownName').textContent = user.name;
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.getElementById('userDropdown').classList.remove('open');
+      }
+    });
+
+    const API_URL = 'http://localhost:3000/api';
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('gameId');
+
+    if (!gameId) {
+      alert('No game selected!');
+      window.location.href = 'admin-games.html';
+    }
+
+    let currentGame = null;
+    let editingPkgId = null;
+
+    // Load game and packages
+    async function loadGamePackages() {
+      try {
+        const token = authService.getToken();
+        const res = await fetch(`${API_URL}/games/${gameId}`);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        currentGame = data.game;
+
+        // Update game info bar
+        document.getElementById('gameIconDisplay').textContent = currentGame.icon;
+        document.getElementById('gameTitleDisplay').textContent = currentGame.title;
+        document.getElementById('gameMetaDisplay').textContent = 
+          `${currentGame.tag} • ${currentGame.category} • Currency: ${currentGame.currency}`;
+        document.getElementById('pkgCurrency').value = currentGame.currency;
+
+        // Render packages
+        renderPackages(currentGame.packages || []);
+
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('packagesGrid').innerHTML = 
+          '<p style="text-align:center;padding:60px;color:#EF4444;grid-column:1/-1">❌ Error: ' + err.message + '</p>';
+      }
+    }
+
+    // Render packages
+    function renderPackages(packages) {
+      const grid = document.getElementById('packagesGrid');
+
+      if (!packages || packages.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-pkg">
+            <div class="icon">📦</div>
+            <h3>No Packages Yet</h3>
+            <p>Click "Add New Package" to create your first top-up package</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = packages.map(pkg => `
+        <div class="pkg-manage-card ${pkg.popular ? 'popular' : ''}">
+          ${pkg.popular ? '<div class="pkg-popular-badge">⭐ POPULAR</div>' : ''}
+          <div style="font-size:40px;margin-bottom:5px">${currentGame.icon}</div>
+          <div class="pkg-amount">${pkg.amount}</div>
+          <div class="pkg-currency">${currentGame.currency}</div>
+          ${pkg.bonus ? `<div class="pkg-bonus-text">${pkg.bonus}</div>` : '<div style="height:20px"></div>'}
+          <div class="pkg-price-display">৳${pkg.price}</div>
+          ${pkg.oldPrice ? `<div class="pkg-old-price">৳${pkg.oldPrice}</div>` : '<div style="height:20px"></div>'}
+          <div class="pkg-actions">
+            <button class="pkg-action-btn pkg-btn-edit" onclick="editPackage('${pkg.id}')">✏️ Edit</button>
+            <button class="pkg-action-btn pkg-btn-delete" onclick="deletePackage('${pkg.id}', '${pkg.amount}')">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Open add modal
+    function openAddPackageModal() {
+      editingPkgId = null;
+      document.getElementById('pkgModalTitle').textContent = 'Add New Package';
+      document.getElementById('submitPkgBtn').innerHTML = '<span>➕</span> Add Package';
+      document.getElementById('packageForm').reset();
+      document.getElementById('pkgCurrency').value = currentGame.currency;
+      document.getElementById('packageModal').classList.add('active');
+    }
+
+    // Close modal
+    function closePackageModal() {
+      document.getElementById('packageModal').classList.remove('active');
+    }
+
+    // Edit package
+    function editPackage(pkgId) {
+      const pkg = currentGame.packages.find(p => p.id === pkgId);
+      if (!pkg) return;
+
+      editingPkgId = pkgId;
+      document.getElementById('pkgModalTitle').textContent = 'Edit Package';
+      document.getElementById('submitPkgBtn').innerHTML = '<span>💾</span> Update Package';
+
+      document.getElementById('pkgId').value = pkg.id;
+      document.getElementById('pkgAmount').value = pkg.amount;
+      document.getElementById('pkgCurrency').value = currentGame.currency;
+      document.getElementById('pkgBonus').value = pkg.bonus || '';
+      document.getElementById('pkgPrice').value = pkg.price;
+      document.getElementById('pkgOldPrice').value = pkg.oldPrice || '';
+      document.getElementById('pkgPopular').checked = pkg.popular || false;
+
+      document.getElementById('packageModal').classList.add('active');
+    }
+
+    // Submit form
+    document.getElementById('packageForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitPkgBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳</span> Saving...';
+
+      const pkgData = {
+        id: document.getElementById('pkgId').value || 'pkg-' + Date.now(),
+        amount: document.getElementById('pkgAmount').value,
+        bonus: document.getElementById('pkgBonus').value,
+        price: parseFloat(document.getElementById('pkgPrice').value),
+        oldPrice: parseFloat(document.getElementById('pkgOldPrice').value) || null,
+        popular: document.getElementById('pkgPopular').checked
+      };
+
+      try {
+        const token = authService.getToken();
+        let url, method;
+
+        if (editingPkgId) {
+          url = `${API_URL}/games/admin/${gameId}/packages/${editingPkgId}`;
+          method = 'PUT';
+        } else {
+          url = `${API_URL}/games/admin/${gameId}/packages`;
+          method = 'POST';
+        }
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(pkgData)
+        });
+
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        alert(`✅ Package ${editingPkgId ? 'updated' : 'added'} successfully!`);
+        closePackageModal();
+        loadGamePackages();
+
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = editingPkgId ? '<span>💾</span> Update Package' : '<span>➕</span> Add Package';
+      }
+    });
+
+    // Delete package
+    async function deletePackage(pkgId, amount) {
+      if (!confirm(`Delete package "${amount} ${currentGame.currency}"? This cannot be undone!`)) return;
+
+      try {
+        const token = authService.getToken();
+        const res = await fetch(`${API_URL}/games/admin/${gameId}/packages/${pkgId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        alert('✅ Package deleted!');
+        loadGamePackages();
+
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+      }
+    }
+
+    // Initialize
+    loadGamePackages();
+
+    // Particles
+    const pc = document.getElementById('particles');
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.animationDuration = (Math.random()*10+10)+'s';
+      p.style.animationDelay = Math.random()*10+'s';
+      p.style.opacity = Math.random()*0.5+0.2;
+      pc.appendChild(p);
+    }
+  </script>
+</body>
+</html>

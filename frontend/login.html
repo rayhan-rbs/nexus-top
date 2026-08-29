@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — NexusTop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">NEXUS<span style="color:var(--secondary)">TOP</span></div>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Login to continue gaming</p>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="email" placeholder="your@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-toggle">
+            <input type="password" class="form-input" id="password" placeholder="••••••••" required>
+            <button type="button" class="toggle-btn" onclick="togglePassword('password')">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Login</button>
+      </form>
+
+      <div class="auth-footer">
+        <a href="forgot-password.html">Forgot Password?</a>
+        <p style="margin-top: 15px;">Don't have an account? <a href="register.html">Register</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/authService.js"></script>
+  <script>
+    // Check if already logged in
+    if (authService.isLoggedIn()) {
+      window.location.href = 'index.html';
+    }
+
+    // Toggle password visibility
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // Handle login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submitBtn');
+      const errorBox = document.getElementById('formError');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      errorBox.classList.remove('show');
+
+      const result = await authService.login(email, password);
+
+      if (result.success) {
+        if (result.user.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      } else {
+        errorBox.textContent = result.error;
+        errorBox.classList.add('show');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
+      }
+    });
+
+    // Initialize particles
+    const particlesContainer = document.getElementById('particles');
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.animationDuration = (Math.random()*10+10)+'s';
+      p.style.animationDelay = Math.random()*10+'s';
+      p.style.opacity = Math.random()*0.5+0.2;
+      particlesContainer.appendChild(p);
+    }
+  </script>
+</body>
+</html>

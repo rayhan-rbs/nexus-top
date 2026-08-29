@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment — NexusTop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .payment-container {
+      min-height: 100vh;
+      padding: 120px 20px 60px;
+    }
+    .payment-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .order-summary-card {
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .order-summary-card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .summary-row:last-child {
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--secondary);
+    }
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .payment-method-card {
+      background: var(--glass);
+      border: 2px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .payment-method-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .payment-method-card.selected {
+      border-color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
+    }
+    .payment-method-card .icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .payment-method-card .name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .payment-method-card .desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .payment-instructions {
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 30px;
+      display: none;
+    }
+    .payment-instructions.active {
+      display: block;
+    }
+    .payment-instructions h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .instruction-box {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .instruction-box .number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin: 10px 0;
+      letter-spacing: 2px;
+    }
+    .copy-btn {
+      padding: 8px 16px;
+      background: var(--grad);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .copy-btn:hover {
+      transform: scale(1.05);
+    }
+    .steps {
+      list-style: none;
+      counter-reset: step;
+    }
+    .steps li {
+      counter-increment: step;
+      padding: 15px 0 15px 50px;
+      position: relative;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .steps li:last-child {
+      border-bottom: none;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 15px;
+      width: 35px;
+      height: 35px;
+      background: var(--grad);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+    }
+    .transaction-form {
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 30px;
+      display: none;
+    }
+    .transaction-form.active {
+      display: block;
+    }
+    .transaction-form h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+        /* ===== PAYMENT FORM STYLES ===== */
+    .transaction-form .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .transaction-form .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .transaction-form .form-input {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+
+    .transaction-form .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+      background: var(--bg-3);
+    }
+
+    .transaction-form .form-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .transaction-form .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--grad);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .transaction-form .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 40%, transparent);
+    }
+
+    .transaction-form .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+        /* ===== GLOBAL BUTTON STYLES FOR PAYMENT PAGE ===== */
+    .payment-container .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--grad);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .payment-container .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 40%, transparent);
+    }
+
+    .payment-container .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .payment-container .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo" onclick="window.location.href='index.html'">NEXUS<span>TOP</span></div>
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="window.location.href='index.html'" title="Home">🏠</button>
+      <button class="icon-btn" onclick="window.location.href='orders.html'" title="Orders">📦</button>
+    </div>
+  </nav>
+
+  <div class="payment-container">
+    <div class="payment-wrapper">
+      <h1 style="font-family:'Orbitron',sans-serif;font-size:36px;margin-bottom:30px;text-align:center">💳 Complete Payment</h1>
+
+      <!-- Order Summary -->
+      <div class="order-summary-card">
+        <h2>Order Summary</h2>
+        <div id="orderSummary">
+          <p style="text-align:center;color:var(--text-dim)">Loading order details...</p>
+        </div>
+      </div>
+
+      <!-- Payment Methods -->
+      <h2 style="font-family:'Orbitron',sans-serif;font-size:24px;margin-bottom:20px">Select Payment Method</h2>
+      <div class="payment-methods" id="paymentMethods">
+        <p style="text-align:center;color:var(--text-dim);grid-column:1/-1">Loading payment methods...</p>
+      </div>
+
+      <!-- Payment Instructions -->
+      <div class="payment-instructions" id="paymentInstructions">
+        <h3 id="instructionTitle">Payment Instructions</h3>
+        <div id="instructionContent"></div>
+      </div>
+
+      <!-- Transaction Form -->
+      <div class="transaction-form" id="transactionForm">
+        <h3>Submit Transaction ID</h3>
+        <form id="manualPaymentForm">
+          <div class="form-group">
+            <label class="form-label">Transaction ID *</label>
+            <input type="text" class="form-input" id="transactionId" placeholder="Enter your transaction ID" required>
+            <small style="color:var(--text-dim);font-size:12px;margin-top:5px;display:block">
+              You will find this in your bKash/Nagad/Rocket app after sending money
+            </small>
+          </div>
+          <button type="submit" class="btn-submit" id="submitPaymentBtn">Submit Payment Proof</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/authService.js"></script>
+  <script src="js/orderService.js"></script>
+  <script>
+    // Check login
+    if (!authService.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    let currentOrderId = null;
+    let currentOrder = null;
+    let selectedMethod = null;
+
+    // Get order ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    currentOrderId = urlParams.get('orderId');
+
+    if (!currentOrderId) {
+      alert('Invalid order!');
+      window.location.href = 'orders.html';
+    }
+
+    // Load order details
+    async function loadOrderDetails() {
+      const result = await orderService.getOrderById(currentOrderId);
+      
+      if (!result.success) {
+        alert('Error: ' + result.error);
+        window.location.href = 'orders.html';
+        return;
+      }
+
+      currentOrder = result.order;
+
+      document.getElementById('orderSummary').innerHTML = `
+        <div class="summary-row">
+          <span>Order ID:</span>
+          <strong style="color:var(--secondary)">${currentOrder.orderId}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Game:</span>
+          <strong>${currentOrder.game.icon} ${currentOrder.game.title}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Package:</span>
+          <strong>${currentOrder.package.amount} ${currentOrder.game.currency}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Game ID:</span>
+          <strong>${currentOrder.gameId}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Total Amount:</span>
+          <strong>৳${currentOrder.totalAmount}</strong>
+        </div>
+      `;
+    }
+
+    // Load payment methods
+    async function loadPaymentMethods() {
+      try {
+        const res = await fetch('http://localhost:3000/api/payments/methods');
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error('Failed to load payment methods');
+        }
+
+        const container = document.getElementById('paymentMethods');
+        container.innerHTML = '';
+
+        data.methods.filter(m => m.enabled).forEach(method => {
+          const card = document.createElement('div');
+          card.className = 'payment-method-card';
+          card.dataset.method = method.id;
+          card.innerHTML = `
+            <div class="icon">${method.icon}</div>
+            <div class="name">${method.name}</div>
+            <div class="desc">${method.description}</div>
+          `;
+          card.onclick = () => selectPaymentMethod(method);
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Load payment methods error:', err);
+        alert('Error loading payment methods');
+      }
+    }
+
+    // Select payment method
+    function selectPaymentMethod(method) {
+      selectedMethod = method;
+
+      // Update UI
+      document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-method="${method.id}"]`).classList.add('selected');
+
+      // Show instructions
+      const instructionsDiv = document.getElementById('paymentInstructions');
+      const instructionTitle = document.getElementById('instructionTitle');
+      const instructionContent = document.getElementById('instructionContent');
+      const transactionForm = document.getElementById('transactionForm');
+
+      if (method.id === 'paypal') {
+        instructionTitle.textContent = 'PayPal Payment';
+        instructionContent.innerHTML = `
+          <div class="instruction-box">
+            <p>Click the button below to proceed to PayPal:</p>
+            <button class="btn-submit" onclick="payWithPayPal()" style="margin-top:15px">Pay with PayPal — ৳${currentOrder.totalAmount}</button>
+          </div>
+        `;
+        transactionForm.classList.remove('active');
+      } else if (method.id === 'demo') {
+        instructionTitle.textContent = 'Demo Payment';
+        instructionContent.innerHTML = `
+          <div class="instruction-box">
+            <p style="color:#10B981;font-weight:600">🎮 Demo Mode Active</p>
+            <p>No real payment required. Click below to complete order instantly.</p>
+            <button class="btn-submit" onclick="payWithDemo()" style="margin-top:15px">Complete Demo Payment</button>
+          </div>
+        `;
+        transactionForm.classList.remove('active');
+      } else {
+        // Manual payment (bKash/Nagad/Rocket)
+        instructionTitle.textContent = `${method.name} Payment Instructions`;
+        instructionContent.innerHTML = `
+          <div class="instruction-box">
+            <p>Send <strong>৳${currentOrder.totalAmount}</strong> to:</p>
+            <div class="number">${method.number}</div>
+            <button class="copy-btn" onclick="copyToClipboard('${method.number}')">📋 Copy Number</button>
+          </div>
+          <ol class="steps">
+            <li>Open your ${method.name} app</li>
+            <li>Select "Send Money"</li>
+            <li>Enter number: <strong>${method.number}</strong></li>
+            <li>Enter amount: <strong>৳${currentOrder.totalAmount}</strong></li>
+            <li>In reference/note, write: <strong>${currentOrder.orderId}</strong></li>
+            <li>Complete the transaction</li>
+            <li>Copy the Transaction ID and submit below</li>
+          </ol>
+        `;
+        transactionForm.classList.add('active');
+      }
+
+      instructionsDiv.classList.add('active');
+    }
+
+    // Copy to clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      });
+    }
+
+    // PayPal payment (mock)
+    async function payWithPayPal() {
+      alert('PayPal integration will be added soon. For now, use Manual or Demo payment.');
+    }
+
+    // Demo payment
+    async function payWithDemo() {
+      if (!confirm('This is a demo payment. No real money will be charged. Continue?')) return;
+
+      try {
+        const token = authService.getToken();
+        const res = await fetch('http://localhost:3000/api/payments/demo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ orderId: currentOrderId })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert('✅ Demo payment successful! Order completed.');
+          window.location.href = 'orders.html';
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        console.error('Demo payment error:', err);
+        alert('Payment failed');
+      }
+    }
+
+    // Submit manual payment
+    document.getElementById('manualPaymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const transactionId = document.getElementById('transactionId').value;
+      const submitBtn = document.getElementById('submitPaymentBtn');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const token = authService.getToken();
+        const res = await fetch('http://localhost:3000/api/payments/manual', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            orderId: currentOrderId,
+            transactionId: transactionId,
+            paymentMethod: selectedMethod.id
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert('✅ Payment submitted! Waiting for admin verification.');
+          window.location.href = 'orders.html';
+        } else {
+          alert('Error: ' + data.error);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Payment Proof';
+        }
+      } catch (err) {
+        console.error('Manual payment error:', err);
+        alert('Submission failed');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Payment Proof';
+      }
+    });
+
+    // Initialize
+    loadOrderDetails();
+    loadPaymentMethods();
+
+    // Particles
+    const particlesContainer = document.getElementById('particles');
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.animationDuration = (Math.random()*10+10)+'s';
+      p.style.animationDelay = Math.random()*10+'s';
+      p.style.opacity = Math.random()*0.5+0.2;
+      particlesContainer.appendChild(p);
+    }
+  </script>
+</body>
+</html>

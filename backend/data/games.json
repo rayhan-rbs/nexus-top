@@ -1,0 +1,176 @@
+{
+  "games": [
+    {
+      "id": "pubg",
+      "title": "PUBG Mobile",
+      "tag": "Battle Royale",
+      "category": "mobile",
+      "rating": 4.8,
+      "players": "50M+",
+      "color": "linear-gradient(135deg,#F59E0B,#EF4444)",
+      "description": "The ultimate battle royale experience. Drop in, loot up, and be the last one standing in intense 100-player matches across massive maps.",
+      "currency": "UC",
+      "icon": "💎",
+      "status": "active",
+      "packages": [
+        { "id": "p1", "amount": "60", "bonus": "Starter", "price": 85, "oldPrice": 100, "currency": "BDT", "popular": false },
+        { "id": "p2", "amount": "325", "bonus": "+25 Bonus", "price": 450, "oldPrice": 520, "currency": "BDT", "popular": false },
+        { "id": "p3", "amount": "660", "bonus": "+60 Bonus", "price": 890, "oldPrice": 1050, "currency": "BDT", "popular": true },
+        { "id": "p4", "amount": "1800", "bonus": "+300 Bonus", "price": 2350, "oldPrice": 2800, "currency": "BDT", "popular": false },
+        { "id": "p5", "amount": "3850", "bonus": "+850 Bonus", "price": 4900, "oldPrice": 5800, "currency": "BDT", "popular": false },
+        { "id": "p6", "amount": "8100", "bonus": "+2100 Bonus", "price": 9800, "oldPrice": 11500, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "ff",
+      "title": "Free Fire",
+      "tag": "Shooter",
+      "category": "mobile",
+      "rating": 4.7,
+      "players": "80M+",
+      "color": "linear-gradient(135deg,#EF4444,#7C3AED)",
+      "description": "Fast-paced 10-minute survival shooter. Squad up, strategize, and dominate the battlefield in this mobile gaming phenomenon.",
+      "currency": "Diamonds",
+      "icon": "💠",
+      "status": "active",
+      "packages": [
+        { "id": "f1", "amount": "100", "bonus": "Starter", "price": 90, "oldPrice": 110, "currency": "BDT", "popular": false },
+        { "id": "f2", "amount": "310", "bonus": "+10 Bonus", "price": 270, "oldPrice": 320, "currency": "BDT", "popular": false },
+        { "id": "f3", "amount": "520", "bonus": "+50 Bonus", "price": 450, "oldPrice": 540, "currency": "BDT", "popular": true },
+        { "id": "f4", "amount": "1060", "bonus": "+120 Bonus", "price": 900, "oldPrice": 1080, "currency": "BDT", "popular": false },
+        { "id": "f5", "amount": "2180", "bonus": "+300 Bonus", "price": 1800, "oldPrice": 2150, "currency": "BDT", "popular": false },
+        { "id": "f6", "amount": "5600", "bonus": "+900 Bonus", "price": 4500, "oldPrice": 5400, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "ml",
+      "title": "Mobile Legends",
+      "tag": "MOBA",
+      "category": "mobile",
+      "rating": 4.9,
+      "players": "100M+",
+      "color": "linear-gradient(135deg,#06B6D4,#7C3AED)",
+      "description": "The #1 MOBA on mobile. 5v5 strategic battles with 100+ unique heroes. Team up and climb the ranks to Mythic!",
+      "currency": "Diamonds",
+      "icon": "💎",
+      "status": "active",
+      "packages": [
+        { "id": "m1", "amount": "86", "bonus": "Starter", "price": 150, "oldPrice": 180, "currency": "BDT", "popular": false },
+        { "id": "m2", "amount": "172", "bonus": "+8 Bonus", "price": 300, "oldPrice": 360, "currency": "BDT", "popular": false },
+        { "id": "m3", "amount": "257", "bonus": "+17 Bonus", "price": 450, "oldPrice": 540, "currency": "BDT", "popular": true },
+        { "id": "m4", "amount": "706", "bonus": "+60 Bonus", "price": 1200, "oldPrice": 1440, "currency": "BDT", "popular": false },
+        { "id": "m5", "amount": "1412", "bonus": "+140 Bonus", "price": 2400, "oldPrice": 2880, "currency": "BDT", "popular": false },
+        { "id": "m6", "amount": "3530", "bonus": "+430 Bonus", "price": 6000, "oldPrice": 7200, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "genshin",
+      "title": "Genshin Impact",
+      "tag": "RPG",
+      "category": "mobile",
+      "rating": 4.9,
+      "players": "60M+",
+      "color": "linear-gradient(135deg,#10B981,#06B6D4)",
+      "description": "Explore the vast world of Teyvat in this open-world action RPG. Unlock characters, master elements, and uncover ancient secrets.",
+      "currency": "Genesis Crystals",
+      "icon": "✨",
+      "status": "active",
+      "packages": [
+        { "id": "g1", "amount": "60", "bonus": "Starter", "price": 100, "oldPrice": 120, "currency": "BDT", "popular": false },
+        { "id": "g2", "amount": "300", "bonus": "+30 Bonus", "price": 500, "oldPrice": 600, "currency": "BDT", "popular": false },
+        { "id": "g3", "amount": "980", "bonus": "+100 Bonus", "price": 1600, "oldPrice": 1920, "currency": "BDT", "popular": true },
+        { "id": "g4", "amount": "1980", "bonus": "+260 Bonus", "price": 3200, "oldPrice": 3840, "currency": "BDT", "popular": false },
+        { "id": "g5", "amount": "3280", "bonus": "+600 Bonus", "price": 5300, "oldPrice": 6360, "currency": "BDT", "popular": false },
+        { "id": "g6", "amount": "6480", "bonus": "+1600 Bonus", "price": 10500, "oldPrice": 12600, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "valo",
+      "title": "Valorant",
+      "tag": "FPS",
+      "category": "pc",
+      "rating": 4.8,
+      "players": "25M+",
+      "color": "linear-gradient(135deg,#EF4444,#F59E0B)",
+      "description": "Tactical 5v5 character-based shooter from Riot Games. Precision gunplay meets unique agent abilities in this competitive FPS.",
+      "currency": "VP (Valorant Points)",
+      "icon": "🎯",
+      "status": "active",
+      "packages": [
+        { "id": "v1", "amount": "475", "bonus": "Starter", "price": 450, "oldPrice": 540, "currency": "BDT", "popular": false },
+        { "id": "v2", "amount": "1000", "bonus": "Standard", "price": 900, "oldPrice": 1080, "currency": "BDT", "popular": true },
+        { "id": "v3", "amount": "2050", "bonus": "+150 Bonus", "price": 1800, "oldPrice": 2160, "currency": "BDT", "popular": false },
+        { "id": "v4", "amount": "3650", "bonus": "+350 Bonus", "price": 3200, "oldPrice": 3840, "currency": "BDT", "popular": false },
+        { "id": "v5", "amount": "5350", "bonus": "+600 Bonus", "price": 4500, "oldPrice": 5400, "currency": "BDT", "popular": false },
+        { "id": "v6", "amount": "11000", "bonus": "+1800 Bonus", "price": 9000, "oldPrice": 10800, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "cod",
+      "title": "Call of Duty Mobile",
+      "tag": "FPS",
+      "category": "mobile",
+      "rating": 4.7,
+      "players": "650M+",
+      "color": "linear-gradient(135deg,#1F2937,#7C3AED)",
+      "description": "Console-quality FPS on mobile. Multiplayer, Battle Royale, and iconic maps from the legendary Call of Duty franchise.",
+      "currency": "CP (COD Points)",
+      "icon": "🔫",
+      "status": "active",
+      "packages": [
+        { "id": "c1", "amount": "80", "bonus": "Starter", "price": 100, "oldPrice": 120, "currency": "BDT", "popular": false },
+        { "id": "c2", "amount": "400", "bonus": "+40 Bonus", "price": 450, "oldPrice": 540, "currency": "BDT", "popular": false },
+        { "id": "c3", "amount": "800", "bonus": "+100 Bonus", "price": 900, "oldPrice": 1080, "currency": "BDT", "popular": true },
+        { "id": "c4", "amount": "2000", "bonus": "+400 Bonus", "price": 2200, "oldPrice": 2640, "currency": "BDT", "popular": false },
+        { "id": "c5", "amount": "5000", "bonus": "+1000 Bonus", "price": 5500, "oldPrice": 6600, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "hsr",
+      "title": "Honkai Star Rail",
+      "tag": "RPG",
+      "category": "mobile",
+      "rating": 4.9,
+      "players": "50M+",
+      "color": "linear-gradient(135deg,#7C3AED,#EC4899)",
+      "description": "Epic space-fantasy RPG from HoYoverse. Board the Astral Express and explore the galaxy in this turn-based adventure.",
+      "currency": "Oneiric Shards",
+      "icon": "🌟",
+      "status": "active",
+      "packages": [
+        { "id": "h1", "amount": "60", "bonus": "Starter", "price": 100, "oldPrice": 120, "currency": "BDT", "popular": false },
+        { "id": "h2", "amount": "300", "bonus": "+30 Bonus", "price": 500, "oldPrice": 600, "currency": "BDT", "popular": false },
+        { "id": "h3", "amount": "980", "bonus": "+100 Bonus", "price": 1600, "oldPrice": 1920, "currency": "BDT", "popular": true },
+        { "id": "h4", "amount": "1980", "bonus": "+260 Bonus", "price": 3200, "oldPrice": 3840, "currency": "BDT", "popular": false },
+        { "id": "h5", "amount": "3280", "bonus": "+600 Bonus", "price": 5300, "oldPrice": 6360, "currency": "BDT", "popular": false },
+        { "id": "h6", "amount": "6480", "bonus": "+1600 Bonus", "price": 10500, "oldPrice": 12600, "currency": "BDT", "popular": false }
+      ]
+    },
+    {
+      "id": "lol",
+      "title": "League of Legends",
+      "tag": "MOBA",
+      "category": "pc",
+      "rating": 4.8,
+      "players": "150M+",
+      "color": "linear-gradient(135deg,#06B6D4,#10B981)",
+      "description": "The world's most popular PC MOBA. Summoner's Rift awaits — master champions, outplay opponents, and claim victory.",
+      "currency": "RP (Riot Points)",
+      "icon": "⚔️",
+      "status": "active",
+      "packages": [
+        { "id": "l1", "amount": "650", "bonus": "Starter", "price": 500, "oldPrice": 600, "currency": "BDT", "popular": false },
+        { "id": "l2", "amount": "1380", "bonus": "Standard", "price": 1000, "oldPrice": 1200, "currency": "BDT", "popular": true },
+        { "id": "l3", "amount": "2800", "bonus": "+200 Bonus", "price": 2000, "oldPrice": 2400, "currency": "BDT", "popular": false },
+        { "id": "l4", "amount": "5000", "bonus": "+600 Bonus", "price": 3500, "oldPrice": 4200, "currency": "BDT", "popular": false },
+        { "id": "l5", "amount": "7200", "bonus": "+1000 Bonus", "price": 5000, "oldPrice": 6000, "currency": "BDT", "popular": false }
+      ]
+    }
+  ],
+  "settings": {
+    "siteName": "NexusTop",
+    "currency": "BDT",
+    "currencySymbol": "৳",
+    "lastUpdated": "2026-08-26T10:00:00Z"
+  }
+}

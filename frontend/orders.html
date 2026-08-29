@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — NexusTop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .orders-container {
+      min-height: 100vh;
+      padding: 120px 20px 60px;
+    }
+    .orders-header {
+      max-width: 1280px;
+      margin: 0 auto 40px;
+    }
+    .orders-header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    .orders-header p {
+      color: var(--text-dim);
+    }
+    .orders-list {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .order-card {
+      background: var(--bg-2);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 25px;
+      transition: all 0.3s;
+    }
+    .order-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .order-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--secondary);
+      margin-bottom: 5px;
+    }
+    .order-date {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .order-status {
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-pending { background: rgba(245,158,11,0.2); color: #F59E0B; }
+    .status-processing { background: rgba(6,182,212,0.2); color: #06B6D4; }
+    .status-completed { background: rgba(16,185,129,0.2); color: #10B981; }
+    .status-cancelled { background: rgba(239,68,68,0.2); color: #EF4444; }
+    .order-body {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 20px;
+      align-items: center;
+    }
+    .order-game-icon {
+      font-size: 48px;
+    }
+    .order-info h3 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    .order-info p {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .order-amount {
+      text-align: right;
+    }
+    .order-amount .price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+    .order-actions {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .btn-small {
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-cancel {
+      background: rgba(239,68,68,0.1);
+      color: #EF4444;
+      border: 1px solid #EF4444;
+    }
+    .btn-cancel:hover {
+      background: #EF4444;
+      color: white;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .empty-state .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .empty-state p {
+      color: var(--text-dim);
+      margin-bottom: 30px;
+    }
+    @media (max-width: 768px) {
+      .order-body {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .order-amount {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo" onclick="window.location.href='index.html'">NEXUS<span>TOP</span></div>
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="window.location.href='index.html'" title="Home">🏠</button>
+      <button class="icon-btn" onclick="authService.logout()" title="Logout">🚪</button>
+    </div>
+  </nav>
+
+  <div class="orders-container">
+    <div class="orders-header">
+      <h1>📦 My Orders</h1>
+      <p>View and manage all your orders</p>
+    </div>
+
+    <div id="ordersLoading" style="text-align:center;padding:60px">
+      <div class="loader"></div>
+      <p style="margin-top:20px;color:var(--text-dim)">Loading orders...</p>
+    </div>
+
+    <div id="ordersList" class="orders-list" style="display:none"></div>
+
+    <div id="emptyState" class="empty-state" style="display:none">
+      <div class="icon">📭</div>
+      <h3>No Orders Yet</h3>
+      <p>You haven't placed any orders yet. Start topping up your favorite games!</p>
+      <button class="btn-primary" onclick="window.location.href='index.html'">Browse Games</button>
+    </div>
+  </div>
+
+  <script src="js/authService.js"></script> 
+  <script src="js/orderService.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/controlPanel.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check if logged in
+    if (!authService.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    // Load orders
+    async function loadOrders() {
+      const result = await orderService.getMyOrders();
+
+      document.getElementById('ordersLoading').style.display = 'none';
+
+      if (!result.success) {
+        alert('Error: ' + result.error);
+        return;
+      }
+
+      if (result.orders.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      const list = document.getElementById('ordersList');
+      list.style.display = 'flex';
+
+      result.orders.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'order-card';
+        card.innerHTML = `
+          <div class="order-header">
+            <div>
+              <div class="order-id">#${order.orderId}</div>
+              <div class="order-date">${new Date(order.createdAt).toLocaleString('bn-BD')}</div>
+            </div>
+            <div class="order-status status-${order.status}">${order.status}</div>
+          </div>
+          <div class="order-body">
+            <div class="order-game-icon">${order.game.icon}</div>
+            <div class="order-info">
+              <h3>${order.game.title}</h3>
+              <p>${order.package.amount} ${order.game.currency} • Game ID: ${order.gameId}</p>
+            </div>
+            <div class="order-amount">
+              <div class="price">৳${order.totalAmount}</div>
+            </div>
+          </div>
+          ${order.status === 'pending' ? (() => {
+            const orderTime = new Date(order.createdAt).getTime();
+            const now = Date.now();
+            const FIVE_MINUTES = 5 * 60 * 1000;
+            const timeDiff = now - orderTime;
+            const canCancel = timeDiff <= FIVE_MINUTES;
+            const minutesLeft = Math.max(0, Math.ceil((FIVE_MINUTES - timeDiff) / 60000));
+            
+            return canCancel ? `
+              <div class="order-actions">
+                <button class="btn-small btn-cancel" onclick="cancelOrder('${order._id}')">Cancel Order</button>
+                <small style="color:var(--text-dim);font-size:11px;margin-left:8px">⏱️ ${minutesLeft} min left</small>
+              </div>
+            ` : `
+              <div class="order-actions">
+                <small style="color:#F59E0B;font-size:12px">⏱️ Cancellation window expired</small>
+              </div>
+            `;
+          })() : ''}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Cancel order
+    async function cancelOrder(orderId) {
+      if (!confirm('Are you sure you want to cancel this order?')) return;
+
+      const result = await orderService.cancelOrder(orderId, 'Cancelled by user');
+
+      if (result.success) {
+        alert('Order cancelled successfully!');
+        loadOrders();
+      } else {
+        alert('Error: ' + result.error);
+      }
+    }
+
+    // Initialize
+    loadOrders();
+
+    // Particles
+    const particlesContainer = document.getElementById('particles');
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.animationDuration = (Math.random()*10+10)+'s';
+      p.style.animationDelay = Math.random()*10+'s';
+      p.style.opacity = Math.random()*0.5+0.2;
+      particlesContainer.appendChild(p);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark" data-accent="purple" data-layout="grid">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusTop — Next-Gen Gaming Top-up</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- Animated Background -->
+  <div class="mesh-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- IMPROVED NAVIGATION -->
+  <nav class="admin-nav" style="max-width:1200px">
+    <div class="logo" onclick="window.location.href='index.html'">NEXUS<span>TOP</span></div>
+    
+    <ul class="admin-nav-links" id="navLinks">
+      <li><a class="admin-nav-link active" href="index.html">🏠 Home</a></li>
+      <li><a class="admin-nav-link" href="#games" onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'});return false;">🎮 Games</a></li>
+      <li><a class="admin-nav-link" href="#features" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'});return false;">✨ Features</a></li>
+      <li><a class="admin-nav-link" href="orders.html" id="ordersNavLink" style="display:none">📦 My Orders</a></li>
+    </ul>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+
+    <!-- User Dropdown -->
+    <div class="dropdown" id="userDropdown">
+      <button class="dropdown-toggle" onclick="toggleDropdown()">
+        <span id="userAvatar" style="width:24px;height:24px;border-radius:50%;background:var(--grad);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700">👤</span>
+        <span id="userName">Guest</span>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="dropdown-menu">
+        <!-- Not Logged In State -->
+        <div id="guestMenu">
+          <a class="dropdown-item" href="login.html">
+            <span class="icon">🔑</span>
+            <span class="label">Login</span>
+          </a>
+          <a class="dropdown-item" href="register.html">
+            <span class="icon">📝</span>
+            <span class="label">Register</span>
+          </a>
+        </div>
+
+        <!-- Logged In State (Hidden by default) -->
+        <div id="userMenu" style="display:none">
+          <div class="dropdown-user">
+            <div class="avatar" id="avatarLarge">U</div>
+            <div class="info">
+              <div class="name" id="dropdownName">User</div>
+              <div class="role" id="dropdownRole">Member</div>
+            </div>
+          </div>
+          <a class="dropdown-item" href="orders.html">
+            <span class="icon">📦</span>
+            <span class="label">My Orders</span>
+          </a>
+          <a class="dropdown-item" href="#" onclick="openPanel();closeDropdown();return false;">
+            <span class="icon">⚙️</span>
+            <span class="label">Settings</span>
+          </a>
+          <a class="dropdown-item" href="#" onclick="toggleTheme();return false;">
+            <span class="icon" id="themeIcon">🌙</span>
+            <span class="label" id="themeLabel">Dark Mode</span>
+          </a>
+          <!-- Admin Only -->
+          <a class="dropdown-item" href="admin.html" id="adminNavLink" style="display:none">
+            <span class="icon">🛠️</span>
+            <span class="label">Admin Panel</span>
+            <span class="badge">ADMIN</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="authService.logout()">
+            <span class="icon">🚪</span>
+            <span class="label">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== HOME VIEW ===== -->
+  <div id="homeView">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          <span>2M+ Active Gamers Worldwide</span>
+        </div>
+        <h1>
+          Level Up Your<br>
+          <span class="grad">Gaming</span> <span class="typing" id="typed">Experience</span>
+        </h1>
+        <p>Instant top-ups, unbeatable prices, and lightning-fast delivery. Power up your favorite games in seconds.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'})">🚀 Start Top-up</button>
+          <button class="btn-ghost" onclick="openPanel()">⚙️ Customize</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><div class="stat-num">500+</div><div class="stat-label">Games</div></div>
+          <div class="stat"><div class="stat-num">2M+</div><div class="stat-label">Gamers</div></div>
+          <div class="stat"><div class="stat-num">99.9%</div><div class="stat-label">Uptime</div></div>
+          <div class="stat"><div class="stat-num">30s</div><div class="stat-label">Delivery</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flash Deals Ticker -->
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span>⚡ FLASH SALE — 50% OFF PUBG UC</span>
+        <span>🔥 NEW — Genshin Impact Crystals</span>
+        <span>💎 BONUS — Extra 10% on Mobile Legends</span>
+        <span>🎁 FREE — First top-up bonus</span>
+        <span>⚡ FLASH SALE — 50% OFF PUBG UC</span>
+        <span>🔥 NEW — Genshin Impact Crystals</span>
+        <span>💎 BONUS — Extra 10% on Mobile Legends</span>
+        <span>🎁 FREE — First top-up bonus</span>
+      </div>
+    </div>
+
+    <!-- Games Section -->
+    <section id="games">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-tag">// Popular Games</div>
+          <h2 class="section-title">Choose Your <span class="grad">Battlefield</span></h2>
+          <p class="section-sub">Top-up the hottest games with instant delivery and best rates.</p>
+        </div>
+        
+        <div class="game-filters">
+          <button class="filter-btn active" data-cat="all">All</button>
+          <button class="filter-btn" data-cat="mobile">Mobile</button>
+          <button class="filter-btn" data-cat="pc">PC</button>
+          <button class="filter-btn" data-cat="console">Console</button>
+          <button class="filter-btn" data-cat="mmorpg">MMORPG</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="gamesLoading" class="skeleton-grid">
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+        </div>
+
+        <!-- Error State -->
+        <div id="gamesError" class="error-box" style="display:none">
+          <div style="font-size:48px;margin-bottom:15px">⚠️</div>
+          <h3 style="margin-bottom:10px">ডেটা লোড করা যায়নি</h3>
+          <p style="color:var(--text-dim);margin-bottom:15px">ইন্টারনেট চেক করুন অথবা আবার চেষ্টা করুন</p>
+          <button class="refresh-btn" onclick="loadGames()">🔄 আবার চেষ্টা করুন</button>
+        </div>
+
+        <!-- Game Grid -->
+        <div class="game-grid" id="gameGrid" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-tag">// Why Choose Us</div>
+          <h2 class="section-title">Built for <span class="grad">Gamers</span></h2>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card"><div class="feature-icon">⚡</div><h3>Instant Delivery</h3><p>Get your in-game currency in under 30 seconds.</p></div>
+          <div class="feature-card"><div class="feature-icon">🔒</div><h3>100% Secure</h3><p>Bank-grade encryption keeps your data safe.</p></div>
+          <div class="feature-card"><div class="feature-icon">💰</div><h3>Best Prices</h3><p>Lowest prices guaranteed, or we'll match it.</p></div>
+          <div class="feature-card"><div class="feature-icon">🎁</div><h3>Daily Rewards</h3><p>Earn bonus credits every day.</p></div>
+          <div class="feature-card"><div class="feature-icon">🌐</div><h3>24/7 Support</h3><p>Round the clock assistance via chat.</p></div>
+          <div class="feature-card"><div class="feature-icon">📱</div><h3>Mobile Optimized</h3><p>Works flawlessly on any device.</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== GAME DETAIL VIEW ===== -->
+  <div class="game-detail" id="gameDetail">
+    <div class="container">
+      <button class="back-btn" onclick="showHome()">← Back to Games</button>
+      <div class="detail-hero">
+        <div class="detail-visual">
+          <div class="detail-visual-bg" id="detailBg"></div>
+        </div>
+        <div class="detail-info">
+          <div class="tag-row" id="detailTags"></div>
+          <h1 id="detailTitle">Game Title</h1>
+          <p id="detailDesc">Game description goes here.</p>
+          <div class="detail-stats">
+            <div class="detail-stat"><div class="detail-stat-num" id="dsRating">4.8</div><div class="detail-stat-label">Rating</div></div>
+            <div class="detail-stat"><div class="detail-stat-num" id="dsPlayers">10M+</div><div class="detail-stat-label">Players</div></div>
+            <div class="detail-stat"><div class="detail-stat-num" id="dsDelivery">30s</div><div class="detail-stat-label">Delivery</div></div>
+          </div>
+          <button class="btn-primary" onclick="document.getElementById('detailPackages').scrollIntoView({behavior:'smooth'})">💎 Top-up Now</button>
+        </div>
+      </div>
+
+      <div class="packages-section" id="detailPackages">
+        <div class="section-head" style="margin-bottom:20px">
+          <div class="section-tag" id="pkgTag">// Select Package</div>
+          <h2 class="section-title">Choose Your <span class="grad">Amount</span></h2>
+        </div>
+        <div class="package-grid" id="pkgGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">NEXUS<span>TOP</span></div>
+        <p>The next-generation gaming top-up platform. Fast, secure, and built for the modern gamer.</p>
+      </div>
+      <div class="footer-col">
+        <h4>PRODUCT</h4>
+        <ul><li><a href="#">Games</a></li><li><a href="#">Top-up</a></li><li><a href="#">Vouchers</a></li></ul>
+      </div>
+      <div class="footer-col">
+        <h4>COMPANY</h4>
+        <ul><li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li></ul>
+      </div>
+      <div class="footer-col">
+        <h4>SUPPORT</h4>
+        <ul><li><a href="#">Help</a></li><li><a href="#">Contact</a></li><li><a href="#">Privacy</a></li></ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 NexusTop. All rights reserved.</div>
+      <div class="socials">
+        <a href="#">f</a><a href="#">𝕏</a><a href="#">💬</a><a href="#">📷</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Control Panel Toggle -->
+  <button class="control-toggle" onclick="openPanel()" title="Customize">⚙️</button>
+
+  <!-- Control Panel Overlay -->
+  <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+
+  <!-- Control Panel -->
+  <div class="control-panel" id="controlPanel">
+    <div class="panel-header">
+      <h2>⚙️ Control Panel</h2>
+      <button class="close-panel" onclick="closePanel()">✕</button>
+    </div>
+
+    <!-- Theme -->
+    <div class="control-section">
+      <span class="control-label">// 01 — Theme Mode</span>
+      <div class="control-title">Light / Dark Mode</div>
+      <div class="control-desc">Switch between light and dark appearance</div>
+      <div class="theme-switch">
+        <div class="theme-opt" data-theme="light" onclick="setTheme('light')">☀️ Light</div>
+        <div class="theme-opt active" data-theme="dark" onclick="setTheme('dark')">🌙 Dark</div>
+      </div>
+    </div>
+
+    <!-- Colors -->
+    <div class="control-section">
+      <span class="control-label">// 02 — Accent Color</span>
+      <div class="control-title">Choose Your Vibe</div>
+      <div class="control-desc">6 premium color palettes to match your style</div>
+      <div class="color-grid">
+        <div class="color-swatch swatch-purple active" data-accent="purple" onclick="setAccent('purple')">Cosmic</div>
+        <div class="color-swatch swatch-cyan" data-accent="cyan" onclick="setAccent('cyan')">Cyber</div>
+        <div class="color-swatch swatch-emerald" data-accent="emerald" onclick="setAccent('emerald')">Emerald</div>
+        <div class="color-swatch swatch-sunset" data-accent="sunset" onclick="setAccent('sunset')">Sunset</div>
+        <div class="color-swatch swatch-rose" data-accent="rose" onclick="setAccent('rose')">Rose</div>
+        <div class="color-swatch swatch-neon" data-accent="neon" onclick="setAccent('neon')">Neon</div>
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="control-section">
+      <span class="control-label">// 03 — Layout Structure</span>
+      <div class="control-title">Game Display Style</div>
+      <div class="control-desc">Choose how games are displayed</div>
+      <div class="layout-grid">
+        <div class="layout-opt active" data-layout="grid" onclick="setLayout('grid')">
+          <span class="icon">⊞</span><span class="name">Grid</span>
+        </div>
+        <div class="layout-opt" data-layout="list" onclick="setLayout('list')">
+          <span class="icon">☰</span><span class="name">List</span>
+        </div>
+        <div class="layout-opt" data-layout="orbital" onclick="setLayout('orbital')">
+          <span class="icon">◉</span><span class="name">Orbital</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="control-section">
+      <button class="reset-btn" onclick="resetAll()">🔄 Reset to Default</button>
+    </div>
+  </div>
+
+    <!-- JavaScript Files (Order is important!) -->
+  <script src="js/dataService.js"></script>
+  <script src="js/authService.js"></script> 
+  <script src="js/orderService.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/controlPanel.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+      // ===== NAVIGATION FUNCTIONS =====
+      function toggleDropdown() {
+        document.getElementById('userDropdown').classList.toggle('open');
+      }
+
+      function closeDropdown() {
+        document.getElementById('userDropdown').classList.remove('open');
+      }
+
+      function toggleMobileMenu() {
+        document.getElementById('navLinks').classList.toggle('mobile-open');
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown')) {
+          closeDropdown();
+        }
+      });
+
+      // ===== UPDATE NAVIGATION BASED ON USER =====
+      function updateNavigation() {
+        if (typeof authService === 'undefined') return;
+
+        const user = authService.getCurrentUser();
+        const guestMenu = document.getElementById('guestMenu');
+        const userMenu = document.getElementById('userMenu');
+        const ordersNavLink = document.getElementById('ordersNavLink');
+        const adminNavLink = document.getElementById('adminNavLink');
+        const userNameEl = document.getElementById('userName');
+        const userAvatarEl = document.getElementById('userAvatar');
+        const avatarLargeEl = document.getElementById('avatarLarge');
+        const dropdownNameEl = document.getElementById('dropdownName');
+        const dropdownRoleEl = document.getElementById('dropdownRole');
+        const themeIconEl = document.getElementById('themeIcon');
+        const themeLabelEl = document.getElementById('themeLabel');
+
+        if (user) {
+          // User is logged in
+          guestMenu.style.display = 'none';
+          userMenu.style.display = 'block';
+          
+          const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+          userNameEl.textContent = user.name;
+          userAvatarEl.textContent = initial;
+          avatarLargeEl.textContent = initial;
+          dropdownNameEl.textContent = user.name;
+          
+          // Show role
+          if (user.role === 'admin') {
+            dropdownRoleEl.textContent = 'Administrator';
+            adminNavLink.style.display = 'flex';
+          } else {
+            dropdownRoleEl.textContent = 'Member';
+            adminNavLink.style.display = 'none';
+          }
+
+          // Show orders link
+          ordersNavLink.style.display = 'flex';
+        } else {
+          // User is not logged in
+          guestMenu.style.display = 'block';
+          userMenu.style.display = 'none';
+          ordersNavLink.style.display = 'none';
+          adminNavLink.style.display = 'none';
+          userNameEl.textContent = 'Guest';
+          userAvatarEl.textContent = '👤';
+        }
+
+        // Update theme icon
+        const currentTheme = document.documentElement.dataset.theme;
+        if (currentTheme === 'light') {
+          themeIconEl.textContent = '☀️';
+          themeLabelEl.textContent = 'Light Mode';
+        } else {
+          themeIconEl.textContent = '🌙';
+          themeLabelEl.textContent = 'Dark Mode';
+        }
+      }
+
+      // ===== ADMIN CSS LINK =====
+      // Add admin.css link if not already added
+      if (!document.querySelector('link[href="css/admin.css"]')) {
+        const adminCssLink = document.createElement('link');
+        adminCssLink.rel = 'stylesheet';
+        adminCssLink.href = 'css/admin.css';
+        document.head.appendChild(adminCssLink);
+      }
+
+      // Update navigation on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(updateNavigation, 100);
+      });
+
+      // Also update after login/logout
+      const originalLogin = authService.login;
+      authService.login = async function(...args) {
+        const result = await originalLogin.apply(this, args);
+        if (result.success) {
+          updateNavigation();
+        }
+        return result;
+      };
+    </script>
+</body>
+</html>
+</body>
+</html>
