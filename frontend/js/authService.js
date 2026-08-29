@@ -4,7 +4,7 @@
 
 class AuthService {
   constructor() {
-    this.API_URL = '${API_BASE_URL}`/api/auth';
+    this.API_URL = API_BASE_URL+'/api/auth';
     this.TOKEN_KEY = 'nxt-token';
     this.USER_KEY = 'nxt-user';
   }

@@ -221,7 +221,7 @@
     async function loadOrders() {
       try {
         const token = authService.getToken();
-        const res = await fetch('${API_BASE_URL}`/api/orders', {
+        const res = await fetch(API_BASE_URL + '/api/orders', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -254,7 +254,7 @@
       // Load games count
       try {
         const token = authService.getToken();
-        const res = await fetch('${API_BASE_URL}`/api/games/admin/all', {
+        const res = await fetch(API_BASE_URL + '/api/games/admin/all', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -321,7 +321,7 @@
       if (!confirm('✅ Confirm this payment?')) return;
       try {
         const token = authService.getToken();
-        const res = await fetch(`${API_BASE_URL}`/api/orders/${orderId}/status`, {
+        const res = await fetch(API_BASE_URL + `/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ status: 'completed' })
@@ -337,7 +337,7 @@
       if (reason === null) return;
       try {
         const token = authService.getToken();
-        const res = await fetch(`${API_BASE_URL}`/api/orders/${orderId}/status`, {
+        const res = await fetch(API_BASE_URL + `/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ status: 'cancelled', cancelledReason: reason || 'Rejected' })
@@ -352,7 +352,7 @@
       if (!confirm('Mark as completed?')) return;
       try {
         const token = authService.getToken();
-        const res = await fetch(`${API_BASE_URL}`/api/orders/${orderId}/status`, {
+        const res = await fetch(API_BASE_URL+`/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ status: 'completed' })
@@ -395,7 +395,7 @@ async function testEmailSystem() {
   }
 
   try {
-    const res = await fetch('${API_BASE_URL}`/api/test-email/test', {
+    const res = await fetch(API_BASE_URL+'/api/test-email/test', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

@@ -379,7 +379,7 @@
     // Load payment methods
     async function loadPaymentMethods() {
       try {
-        const res = await fetch('${API_BASE_URL}`/api/payments/methods');
+        const res = await fetch(API_BASE_URL+'/api/payments/methods');
         const data = await res.json();
 
         if (!data.success) {
@@ -486,7 +486,7 @@
 
       try {
         const token = authService.getToken();
-        const res = await fetch('${API_BASE_URL}`/api/payments/demo', {
+        const res = await fetch(API_BASE_URL+'/api/payments/demo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -521,7 +521,7 @@
 
       try {
         const token = authService.getToken();
-        const res = await fetch('`${API_BASE_URL}`/api/payments/manual', {
+        const res = await fetch(API_BASE_URL+'/api/payments/manual', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
