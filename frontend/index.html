@@ -428,6 +428,67 @@
         return result;
       };
     </script>
+
+      <!-- ✅ এই স্ক্রিপ্টটি সবসময় </body> ট্যাগের ঠিক আগে থাকবে -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // একটু ডিলে দেওয়া হচ্ছে যাতে authService.js পুরোপুরি লোড হতে পারে
+      setTimeout(() => {
+        if (typeof authService !== 'undefined') {
+          const user = authService.getCurrentUser();
+          
+          // এলিমেন্টগুলো খুঁজে বের করা
+          const userNameEl = document.getElementById('userName');
+          const userAvatarEl = document.getElementById('userAvatar');
+          const avatarLargeEl = document.getElementById('avatarLarge');
+          const dropdownNameEl = document.getElementById('dropdownName');
+          const dropdownRoleEl = document.getElementById('dropdownRole');
+          const guestMenu = document.getElementById('guestMenu');
+          const userMenu = document.getElementById('userMenu');
+          const adminNavLink = document.getElementById('adminNavLink');
+          const ordersNavLink = document.getElementById('ordersNavLink');
+
+          if (user) {
+            // 👤 ইউজার লগইন করা আছে
+            console.log('✅ User found, updating UI:', user.name);
+            const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+            
+            if (userNameEl) userNameEl.textContent = user.name;
+            if (userAvatarEl) userAvatarEl.textContent = initial;
+            if (avatarLargeEl) avatarLargeEl.textContent = initial;
+            if (dropdownNameEl) dropdownNameEl.textContent = user.name;
+            
+            if (user.role === 'admin') {
+              if (dropdownRoleEl) dropdownRoleEl.textContent = 'Administrator';
+              if (adminNavLink) adminNavLink.style.display = 'flex';
+            } else {
+              if (dropdownRoleEl) dropdownRoleEl.textContent = 'Member';
+              if (adminNavLink) adminNavLink.style.display = 'none';
+            }
+
+            if (guestMenu) guestMenu.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            if (ordersNavLink) ordersNavLink.style.display = 'flex';
+
+          } else {
+            // 👤 ইউজার লগইন করা নেই (Guest)
+            console.log('ℹ️ No user logged in, showing Guest UI');
+            if (guestMenu) guestMenu.style.display = 'block';
+            if (userMenu) userMenu.style.display = 'none';
+            if (adminNavLink) adminNavLink.style.display = 'none';
+            if (ordersNavLink) ordersNavLink.style.display = 'none';
+            
+            if (userNameEl) userNameEl.textContent = 'Guest';
+            if (userAvatarEl) userAvatarEl.textContent = '👤';
+          }
+        } else {
+          console.error('❌ authService is not defined! Check if authService.js is loaded before this script.');
+        }
+      }, 100); // 100ms ডিলে
+    });
+  </script>
+</body>
+</html>
 </body>
 </html>
 </body>
