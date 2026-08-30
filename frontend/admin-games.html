@@ -551,7 +551,6 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>⏳</span> Saving...';
 
-      // 👈 FormData ব্যবহার করতে হবে যখন ফাইল আপলোড করা হয়
       const formData = new FormData();
       formData.append('gameId', document.getElementById('gameId').value);
       formData.append('title', document.getElementById('gameTitle').value);
@@ -561,13 +560,13 @@
       formData.append('currency', document.getElementById('gameCurrency').value);
       formData.append('color', document.getElementById('gameColor').value);
       formData.append('description', document.getElementById('gameDescription').value);
-      formData.append('rating', parseFloat(document.getElementById('gameRating').value));
+      formData.append('rating', document.getElementById('gameRating').value); // String যাবে, ব্যাকএন্ড Number করবে
       formData.append('players', document.getElementById('gamePlayers').value);
       formData.append('status', document.getElementById('gameStatus').value);
 
       const imageFile = document.getElementById('gameImage').files[0];
       if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append('image', imageFile); // নতুন ইমেজ থাকলে যোগ হবে, না থাকলে যোগ হবে না (সেফ)
       }
 
       try {
@@ -575,19 +574,18 @@
         let url, method;
 
         if (editingGameId) {
-          url = `${API_URL}/games/admin/${editingGameId}`;
+          url = API_URL + '/games/admin/' + editingGameId;
           method = 'PUT';
         } else {
-          url = `${API_URL}/games/admin`;
+          url = API_URL + '/games/admin';
           method = 'POST';
         }
 
         const res = await fetch(url, {
-          method,
+          method: method,
           headers: {
-            'Authorization': `Bearer ${token}`
-            // ⚠️ গুরুত্বপূর্ণ: FormData ব্যবহার করলে 'Content-Type' হেডার ম্যানুয়ালি সেট করবেন না!
-            // ব্রাউজার অটোমেটিক সঠিক boundary সহ সেট করে দেয়।
+            'Authorization': 'Bearer ' + token
+            // ⚠️ লক্ষ্য করুন: এখানে 'Content-Type' হেডার নেই। এটি ইচ্ছাকৃতভাবে রাখা হয়নি।
           },
           body: formData
         });
@@ -596,7 +594,7 @@
 
         if (!data.success) throw new Error(data.error);
 
-        alert(`✅ Game ${editingGameId ? 'updated' : 'added'} successfully!`);
+        alert('✅ Game ' + (editingGameId ? 'updated' : 'added') + ' successfully!');
         closeGameModal();
         loadGames();
       } catch (err) {

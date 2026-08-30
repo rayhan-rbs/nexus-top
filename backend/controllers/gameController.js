@@ -104,27 +104,45 @@ exports.createGame = async (req, res) => {
 // @access  Private/Admin
 exports.updateGame = async (req, res) => {
   try {
+    // ১. বডি থেকে সব ডেটা নিন
     const updateData = { ...req.body };
-    
-    // 👈 নতুন ইমেইজ আপলোড করা হলে পুরানোটা রিপ্লেস হবে
+
+    // ২. ✅ যদি নতুন ইমেজ আপলোড করা হয়, শুধু তখনই image আপডেট হবে
+    // নতুন ইমেজ না দিলে পুরানো ইমেজই ডাটাবেসে থেকে যাবে (কোনো এরর আসবে না)
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = req.file.path; // এটি Cloudinary-র URL রিটার্ন করবে
     }
 
+    // ৩. ✅ FormData সবকিছু String হিসেবে পাঠায়। তাই Number ফিল্ডগুলোকে পার্স করে নিতে হবে
+    if (updateData.rating) {
+      updateData.rating = Number(updateData.rating);
+    }
+
+    // ৪. ডাটাবেসে আপডেট করুন
     const game = await Game.findOneAndUpdate(
       { gameId: req.params.id },
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!game) {
       return res.status(404).json({ success: false, error: 'Game not found' });
     }
-    
-    res.json({ success: true, message: 'Game updated successfully', game });
+
+    res.json({ 
+      success: true, 
+      message: 'Game updated successfully', 
+      game 
+    });
+
   } catch (err) {
-    console.error('Update game error:', err);
-    res.status(500).json({ success: false, error: 'Failed to update game' });
+    // ⚠️ এই লাইনটি Render কনসোলে এক্সাক্ট এররটি দেখাবে
+    console.error('❌ Update game error details:', err); 
+    
+    res.status(500).json({ 
+      success: false, 
+      error: err.message || 'Something went wrong!' 
+    });
   }
 };
 
