@@ -1,3 +1,48 @@
+
+/* ===== MOBILE RESPONSIVE FIX ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden; /* বাম-ডান স্ক্রল বন্ধ করবে */
+  width: 100%;
+  position: relative;
+}
+
+/* নেভিগেশন ফিক্স */
+nav {
+  width: 100%;
+  max-width: 100vw;
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+
+/* সব কন্টেইনারের জন্য */
+.container, .admin-wrapper, .pkg-wrapper {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ইমেজ এবং ভিডিও ফিক্স */
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ফ্লেক্সবক্স ফিক্স */
+.flex, .game-card, .pkg-card {
+  flex-shrink: 1;
+  min-width: 0;
+}
 /* ===== THEME VARIABLES ===== */
 :root {
   --transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
