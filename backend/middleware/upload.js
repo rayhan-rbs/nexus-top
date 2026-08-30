@@ -1,44 +1,28 @@
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// uploads ফোল্ডার না থাকলে তৈরি করে নেওয়া
-const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+// Cloudinary কনফিগারেশন
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// স্টোরেজ কনফিগারেশন
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // ফাইলের নামের সাথে টাইমস্ট্যাম্প যোগ করা যাতে নাম ডুপ্লিকেট না হয়
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+// Cloudinary Storage সেটআপ
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'nexustop-games', // Cloudinary-তে একটি ফোল্ডার তৈরি করবে
+    allowed_formats: ['jpeg', 'png', 'jpg', 'webp'],
+    // ফাইলের নাম ইউনিক রাখার জন্য
+    public_id: (req, file) => 'game-' + Date.now() + '-' + Math.round(Math.random() * 1E9)
   }
 });
 
-// ফাইল টাইপ চেক (শুধু ইমেইজ অনুমোদিত)
-function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb('Error: শুধুমাত্র ইমেইজ ফাইল (JPG, PNG, WEBP) আপলোড করা যাবে!');
-  }
-}
-
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5000000 }, // 5MB সাইজ লিমিট
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  }
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB লিমিট
 });
 
 module.exports = upload;
