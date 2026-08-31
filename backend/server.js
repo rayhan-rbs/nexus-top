@@ -2,6 +2,7 @@
  * NexusTop Backend Server
  */
 
+const paypalRoutes = require('./routes/paypal');
 const paymentsRoutes = require('./routes/payments');
 const ordersRoutes = require('./routes/orders');
 
@@ -44,6 +45,8 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/api/', limiter);
 
 // API Routes
+
+app.use('/api/payments/paypal', paypalRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', ordersRoutes); 

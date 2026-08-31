@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Orders — NexusTop</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/preloader.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <style>
@@ -151,6 +152,23 @@
   </style>
 </head>
 <body>
+
+  <body>
+  <!-- PRELOADER -->
+  <div class="preloader-wrapper">
+    <div class="preloader-particles"></div>
+    <div class="preloader-logo">NEXUSTOP</div>
+    <div class="preloader-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <div class="preloader-text">LOADING...</div>
+    <div class="preloader-progress">
+      <div class="preloader-progress-bar"></div>
+    </div>
+  </div>
+
   <!-- Custom Cursor -->
   <div class="cursor-dot"></div>
   <div class="cursor-ring"></div>
@@ -186,7 +204,7 @@
       <button class="btn-primary" onclick="window.location.href='index.html'">Browse Games</button>
     </div>
   </div>
-  
+  <script src="js/preloader.js"></script>
   <script src="js/config.js"></script> 
   <script src="js/authService.js"></script> 
   <script src="js/orderService.js"></script>
