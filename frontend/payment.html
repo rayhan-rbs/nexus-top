@@ -339,11 +339,13 @@
     </div>
   </div>
 
-  <script src="js/preloader.js"></script>
+    <script src="js/preloader.js"></script>
   <script src="js/config.js"></script>
   <script src="js/authService.js"></script>
   <script src="js/orderService.js"></script>
   <script>
+    // ===== PAYMENT PAGE LOGIC =====
+    
     // Check login
     if (!authService.isLoggedIn()) {
       window.location.href = 'login.html';
@@ -401,7 +403,7 @@
     // Load payment methods
     async function loadPaymentMethods() {
       try {
-        const res = await fetch(API_BASE_URL+'/api/payments/methods');
+        const res = await fetch(API_BASE_URL + '/api/payments/methods');
         const data = await res.json();
 
         if (!data.success) {
@@ -448,20 +450,25 @@
 
       if (method.id === 'paypal') {
         instructionTitle.textContent = 'PayPal Payment';
+        // ✅ display:none সরানো হয়েছে এবং বাটন রেন্ডার করার লজিক যোগ করা হয়েছে
         instructionContent.innerHTML = `
           <div class="instruction-box">
             <p>Click the button below to proceed to PayPal:</p>
-          <!-- PayPal Payment Section -->
-            <div id="paypalPaymentSection" style="display:none; margin-top: 30px;">
+            <div id="paypalPaymentSection" style="margin-top: 20px;">
               <div class="payment-method-box" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 30px; text-align: center;">
                 <h3 style="color: #06B6D4; margin-bottom: 20px;">৳${currentOrder.totalAmount} Pay with PayPal</h3>
                 <div id="paypal-button-container"></div>
               </div>
             </div>
           </div>
-
         `;
         transactionForm.classList.remove('active');
+        
+        // ✅ HTML DOM-এ যোগ হওয়ার পর PayPal বাটন রেন্ডার করা
+        setTimeout(() => {
+          renderPayPalButton(currentOrderId, currentOrder.totalAmount);
+        }, 100);
+
       } else if (method.id === 'demo') {
         instructionTitle.textContent = 'Demo Payment';
         instructionContent.innerHTML = `
@@ -501,92 +508,87 @@
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
         alert('Copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy');
       });
     }
 
-    // PayPal payment (mock)
+    // ✅ PayPal payment render function (সংশোধিত)
+    function renderPayPalButton(orderId, amount) {
+      if (typeof paypal === 'undefined') {
+        console.error('PayPal SDK not loaded');
+        return;
+      }
 
-      let currentPaypalOrderId = null;
+      // আগের বাটন থাকলে মুছে ফেলা (ডুপ্লিকেট প্রতিরোধ)
+      const container = document.getElementById('paypal-button-container');
+      if (container) {
+        container.innerHTML = '';
+      }
 
-      // PayPal বাটন রেন্ডার
-      function renderPayPalButton(orderId, amount) {
-        if (typeof paypal === 'undefined') {
-          console.error('PayPal SDK not loaded');
-          return;
-        }
-
-        paypal.Buttons({
-          style: {
-            layout: 'vertical',
-            color: 'gold',
-            shape: 'rect',
-            label: 'paypal'
-          },
-          
-          createOrder: async function() {
-            try {
-              const token = authService.getToken();
-              const res = await fetch(API_BASE_URL + '/api/payments/paypal/create-order', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ orderId })
-              });
-              
-              const data = await res.json();
-              
-              if (!data.success) throw new Error(data.error);
-              
-              currentPaypalOrderId = data.orderId;
-              return data.orderId;
-            } catch (err) {
-              console.error('Create order error:', err);
-              alert('❌ Error: ' + err.message);
-            }
-          },
-          
-          onApprove: async function(data, actions) {
-            try {
-              const token = authService.getToken();
-              const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({
-                  orderId: orderId,
-                  paypalOrderId: data.orderID
-                })
-              });
-              
-              const paymentData = await res.json();
-              
-              if (!paymentData.success) throw new Error(paymentData.error);
-              
-              alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
-              window.location.href = 'orders.html';
-              
-            } catch (err) {
-              console.error('Capture error:', err);
-              alert('❌ Payment failed: ' + err.message);
-            }
-          },
-          
-          onError: function(err) {
-            console.error('PayPal Error:', err);
-            alert('❌ PayPal Error: ' + err.message);
+      paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color: 'gold',
+          shape: 'rect',
+          label: 'paypal'
+        },
+        
+        createOrder: async function() {
+          try {
+            const token = authService.getToken();
+            const res = await fetch(API_BASE_URL + '/api/payments/paypal/create-order', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ orderId })
+            });
+            
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+            
+            return data.orderId;
+          } catch (err) {
+            console.error('Create order error:', err);
+            alert('❌ Error: ' + err.message);
           }
-        }).render('#paypal-button-container');
-      }
-
-      // Payment method select এ যোগ করুন
-      if (paymentMethod === 'paypal') {
-        document.getElementById('paypalPaymentSection').style.display = 'block';
-        renderPayPalButton(orderId, orderData.totalAmount);
-      }
+        },
+        
+        onApprove: async function(data, actions) {
+          try {
+            const token = authService.getToken();
+            const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({
+                orderId: orderId,
+                paypalOrderId: data.orderID
+              })
+            });
+            
+            const paymentData = await res.json();
+            if (!paymentData.success) throw new Error(paymentData.error);
+            
+            alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
+            window.location.href = 'orders.html';
+            
+          } catch (err) {
+            console.error('Capture error:', err);
+            alert('❌ Payment failed: ' + err.message);
+          }
+        },
+        
+        onError: function(err) {
+          console.error('PayPal Error:', err);
+          alert('❌ PayPal Error: ' + err.message);
+        }
+      }).render('#paypal-button-container');
+    }
 
     // Demo payment
     async function payWithDemo() {
@@ -594,11 +596,11 @@
 
       try {
         const token = authService.getToken();
-        const res = await fetch(API_BASE_URL+'/api/payments/demo', {
+        const res = await fetch(API_BASE_URL + '/api/payments/demo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': 'Bearer ' + token
           },
           body: JSON.stringify({ orderId: currentOrderId })
         });
@@ -629,11 +631,11 @@
 
       try {
         const token = authService.getToken();
-        const res = await fetch(API_BASE_URL+'/api/payments/manual', {
+        const res = await fetch(API_BASE_URL + '/api/payments/manual', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': 'Bearer ' + token
           },
           body: JSON.stringify({
             orderId: currentOrderId,
@@ -664,17 +666,21 @@
     loadOrderDetails();
     loadPaymentMethods();
 
-    // Particles
+    // Particles (Safe check added)
     const particlesContainer = document.getElementById('particles');
-    for(let i=0;i<30;i++){
-      const p = document.createElement('div');
-      p.className = 'particle';
-      p.style.left = Math.random()*100+'%';
-      p.style.animationDuration = (Math.random()*10+10)+'s';
-      p.style.animationDelay = Math.random()*10+'s';
-      p.style.opacity = Math.random()*0.5+0.2;
-      particlesContainer.appendChild(p);
+    if (particlesContainer) {
+      for(let i = 0; i < 30; i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        p.style.opacity = Math.random() * 0.5 + 0.2;
+        particlesContainer.appendChild(p);
+      }
     }
   </script>
+</body>
+</html>
 </body>
 </html>
