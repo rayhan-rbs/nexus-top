@@ -1,4 +1,5 @@
 const paypal = require('@paypal/checkout-server-sdk');
+const Order = require('../models/Order'); // 👈 এই লাইনটি যোগ করতে হবে (সবচেয়ে গুরুত্বপূর্ণ)
 
 // PayPal Environment সেটআপ
 function environment() {
@@ -23,6 +24,7 @@ exports.createOrder = async (req, res) => {
   try {
     const { orderId } = req.body;
     
+    // এখন Order মডেলটি কাজ করবে
     const order = await Order.findById(orderId).populate('user', 'name email');
     
     if (!order) {
@@ -59,8 +61,8 @@ exports.createOrder = async (req, res) => {
         custom_id: order._id.toString()
       }],
       application_context: {
-        return_url: `${process.env.FRONTEND_URL}/payment-success.html?orderId=${orderId}`,
-        cancel_url: `${process.env.FRONTEND_URL}/payment-cancel.html?orderId=${orderId}`,
+        return_url: `${process.env.FRONTEND_URL}/orders.html`, 
+        cancel_url: `${process.env.FRONTEND_URL}/orders.html`,
         brand_name: 'NexusTop Gaming',
         user_action: 'PAY_NOW'
       }
@@ -75,10 +77,10 @@ exports.createOrder = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('PayPal create order error:', err);
+    console.error('❌ PayPal create order error:', err);
     res.status(500).json({
       success: false,
-      error: 'Failed to create PayPal order'
+      error: err.message || 'Failed to create PayPal order'
     });
   }
 };
@@ -139,7 +141,7 @@ exports.capturePayment = async (req, res) => {
     }
 
   } catch (err) {
-    console.error('PayPal capture error:', err);
+    console.error('❌ PayPal capture error:', err);
     res.status(500).json({
       success: false,
       error: 'Payment capture failed'
