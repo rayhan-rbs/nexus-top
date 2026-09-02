@@ -327,7 +327,7 @@
                 <button class="action-btn btn-confirm" onclick="confirmOrder('${order._id}')">✓ Confirm</button>
                 <button class="action-btn btn-reject" onclick="rejectOrder('${order._id}')">✗ Reject</button>
               ` : ''}
-              ${order.status === 'pending' ? `
+              ${(order.status === 'pending' || order.status === 'processing') ? `
                 <button class="action-btn btn-confirm" onclick="completeOrder('${order._id}')">✓ Complete</button>
               ` : ''}
             </div>
