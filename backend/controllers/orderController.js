@@ -195,9 +195,7 @@ exports.updateOrderStatus = async (req, res) => {
     } else if (status === 'cancelled') {
       order.cancelledAt = Date.now();
       order.cancelledReason = cancelledReason || 'Cancelled by admin';
-    }else if (status === 'processing') {
-      order.deliveredAt = Date.now();
-      order.paymentStatus = 'paid';
+    }
 
     await order.save();
 

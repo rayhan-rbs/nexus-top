@@ -137,7 +137,7 @@ exports.capturePayment = async (req, res) => {
       order.paymentMethod = 'paypal';
       order.paymentStatus = 'paid';
       order.transactionId = paypalOrderId;
-      order.status = 'processing';
+      order.status = 'COMPLETED';
       order.paidAt = Date.now();
       
       await order.save();
