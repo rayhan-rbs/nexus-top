@@ -556,30 +556,35 @@
           }
         },
         
-        onApprove: function(data, actions) {
-          // ✅ Promise রিটার্ন করলে PayPal popup অটোমেটিক বন্ধ হবে
-          return fetch(API_BASE_URL + '/api/payments/paypal/capture', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + authService.getToken()
-            },
-            body: JSON.stringify({
-              orderId: orderId,
-              paypalOrderId: data.orderID
-            })
-          })
-          .then(function(res) { return res.json(); })
-          .then(function(paymentData) {
+        onApprove: async function(data, actions) {
+          try {
+            // ✅ এই লাইনটি সবচেয়ে গুরুত্বপূর্ণ - এটি popup বন্ধ করবে
+            const captureData = await actions.order.capture();
+            
+            // এরপর backend এ capture রিকোয়েস্ট পাঠান
+            const token = authService.getToken();
+            const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({
+                orderId: orderId,
+                paypalOrderId: data.orderID
+              })
+            });
+            
+            const paymentData = await res.json();
             if (!paymentData.success) throw new Error(paymentData.error);
             
             alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
             window.location.href = 'orders.html';
-          })
-          .catch(function(err) {
+            
+          } catch (err) {
             console.error('Capture error:', err);
             alert('❌ Payment failed: ' + err.message);
-          });
+          }
         },
         
         onError: function(err) {
