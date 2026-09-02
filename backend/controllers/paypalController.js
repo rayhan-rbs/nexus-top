@@ -102,80 +102,73 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// @desc    Capture PayPal Payment
-// @route   POST /api/payments/paypal/capture
-// @access  Private
 exports.capturePayment = async (req, res) => {
   try {
     const { orderId, paypalOrderId } = req.body;
-    
-    console.log("📥 Capturing PayPal payment for order:", orderId, "paypalOrderId:", paypalOrderId);
-    
+    console.log("🔄 Capturing PayPal Order:", paypalOrderId, "for DB Order:", orderId);
+
     const order = await Order.findById(orderId);
-    
     if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found' });
+      return res.status(404).json({ success: false, error: 'Order not found in database' });
     }
 
-    const baseUrl = process.env.PAYPAL_MODE === 'sandbox' 
-      ? 'https://api-m.sandbox.paypal.com' 
-      : 'https://api-m.paypal.com';
+    const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
+    request.requestBody({});
 
-    const accessToken = await getPayPalAccessToken();
+    // PayPal API কল
+    const response = await client().execute(request);
 
-    const response = await fetch(baseUrl + '/v2/checkout/orders/' + paypalOrderId + '/capture', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/json'
+    if (response.result.status === 'COMPLETED') {
+      // ✅ সেফটি চেক: যাতে purchase_units undefined থাকলেও সার্ভার ক্র্যাশ না করে
+      let actualTransactionId = paypalOrderId; 
+      try {
+        if (response.result.purchase_units && 
+            response.result.purchase_units[0].payments && 
+            response.result.purchase_units[0].payments.captures[0]) {
+          actualTransactionId = response.result.purchase_units[0].payments.captures[0].id;
+        }
+      } catch (extractErr) {
+        console.warn("⚠️ Could not extract deep transaction ID, using fallback:", extractErr.message);
       }
-    });
 
-    const data = await response.json();
-
-
-    const actualTransactionId = response.result.purchase_units[0].payments.captures[0].id;
-    
-    if (data.status === 'COMPLETED') {
+      // ডাটাবেস আপডেট
       order.paymentMethod = 'paypal';
       order.paymentStatus = 'paid';
-      order.transactionId = paypalOrderId;
+      order.transactionId = actualTransactionId;
       order.status = 'processing';
       order.paidAt = Date.now();
-      
       await order.save();
-      console.log("✅ Payment captured and order updated");
 
-      // Send email (non-critical)
+      // ইমেইল পাঠানো (ঐচ্ছিক)
       try {
         const { sendPaymentSuccess } = require('../utils/emailService');
         const User = require('../models/User');
         const user = await User.findById(order.user);
-        if (user) {
-          sendPaymentSuccess(user, order);
-        }
-      } catch (emailErr) {
-        console.error('Email send failed (non-critical):', emailErr.message);
+        if (user) sendPaymentSuccess(user, order);
+      } catch (err) {
+        console.error('❌ Email send failed (non-critical):', err.message);
       }
 
-      res.json({
-        success: true,
-        message: 'Payment successful',
-        order
+      return res.json({ 
+        success: true, 
+        message: 'Payment successful', 
+        order 
       });
     } else {
-      console.error("❌ Payment not completed. Status:", data.status);
-      res.status(400).json({
-        success: false,
-        error: 'Payment not completed. Status: ' + data.status
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Payment not completed. Status: ' + response.result.status 
       });
     }
 
   } catch (err) {
-    console.error("❌ PAYPAL CAPTURE ERROR:", err.message);
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Payment capture failed'
+    // ✅ এখানেই মূল সমস্যা ধরা পড়বে। Render লগে এটি দেখাবে।
+    console.error("❌ BACKEND PAYPAL CAPTURE CRASH:", err.message);
+    
+    // ফ্রন্টএন্ড যেন ক্র্যাশ না করে, তাই পরিষ্কার JSON এরর পাঠানো হচ্ছে
+    res.status(500).json({ 
+      success: false, 
+      error: err.message || 'Payment capture failed on server' 
     });
   }
 };

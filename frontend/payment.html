@@ -570,9 +570,12 @@
         
         onApprove: async function(data, actions) {
           try {
-            console.log("Approving payment with PayPal Order ID:", data.orderID);
-            const token = authService.getToken();
+            console.log("✅ User approved. Sending to backend for capture...", data.orderID);
             
+            // currentOrderId ভেরিয়েবলটি স্কোপের ভেতরে আছে কিনা নিশ্চিত করুন
+            const targetOrderId = typeof currentOrderId !== 'undefined' ? currentOrderId : urlParams.get('orderId');
+
+            const token = authService.getToken();
             const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
               method: 'POST',
               headers: {
@@ -580,25 +583,30 @@
                 'Authorization': 'Bearer ' + token
               },
               body: JSON.stringify({
-                orderId: orderId,
+                orderId: targetOrderId,
                 paypalOrderId: data.orderID
               })
             });
 
-            const paymentData = await res.json();
-            
-            if (!paymentData.success) {
-              throw new Error(paymentData.error || "পেমেন্ট ভেরিফাই করতে ব্যর্থ হয়েছে");
+            // ✅ ক্রিটিক্যাল চেক: যদি ব্যাকএন্ড 500 এরর দেয়, তাহলে JSON পার্স করার চেষ্টা করবে না
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error("❌ Backend returned error:", res.status, errorText);
+              throw new Error(`সার্ভার এরর (${res.status})। দয়া করে Render লগ চেক করুন।`);
             }
-            
-            alert('✅ পেমেন্ট সফল হয়েছে! অর্ডার আইডি: ' + paymentData.order.orderId);
-            
-            // ✅ সফল হলে পপআপ অটোমেটিক বন্ধ হয়ে এই পেইজে রিডাইরেক্ট করবে
-            window.location.href = 'orders.html'; 
-            
+
+            const paymentData = await res.json();
+
+            if (!paymentData.success) {
+              throw new Error(paymentData.error || 'Payment verification failed');
+            }
+
+            alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
+            window.location.href = 'orders.html';
+
           } catch (err) {
-            console.error('Capture error:', err);
-            alert('❌ পেমেন্ট ফেইল: ' + err.message);
+            console.error('❌ Capture error:', err);
+            alert('❌ Payment failed: ' + err.message);
           }
         },
         
