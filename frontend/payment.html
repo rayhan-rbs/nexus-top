@@ -558,10 +558,10 @@
         
         onApprove: async function(data, actions) {
           try {
-            // ✅ এই লাইনটি সবচেয়ে গুরুত্বপূর্ণ - এটি popup বন্ধ করবে
-            const captureData = await actions.order.capture();
-            
-            // এরপর backend এ capture রিকোয়েস্ট পাঠান
+            // ❌ এই লাইনটি মুছে ফেলুন: const captureData = await actions.order.capture();
+            // এটি সার্ভার-সাইড ইন্টিগ্রেশনের সাথে কনফ্লিক্ট করে।
+
+            // ✅ সরাসরি ব্যাকএন্ডে ক্যাপচার রিকোয়েস্ট পাঠান
             const token = authService.getToken();
             const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
               method: 'POST',
@@ -570,14 +570,18 @@
                 'Authorization': 'Bearer ' + token
               },
               body: JSON.stringify({
-                orderId: orderId,
-                paypalOrderId: data.orderID
+                orderId: orderId,          // আপনার ডাটাবেসের অর্ডার আইডি
+                paypalOrderId: data.orderID // PayPal এর তৈরি করা অর্ডার আইডি
               })
             });
             
             const paymentData = await res.json();
-            if (!paymentData.success) throw new Error(paymentData.error);
             
+            if (!paymentData.success) {
+              throw new Error(paymentData.error || 'Payment capture failed');
+            }
+            
+            // ✅ সাকসেস হলে পপআপ অটোমেটিক বন্ধ হয়ে যাবে এবং রিডাইরেক্ট হবে
             alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
             window.location.href = 'orders.html';
             
