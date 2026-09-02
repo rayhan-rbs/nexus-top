@@ -108,47 +108,41 @@ exports.createOrder = async (req, res) => {
 exports.capturePayment = async (req, res) => {
   try {
     const { orderId, paypalOrderId } = req.body;
-    
-    console.log("📥 Capturing PayPal payment for order:", orderId, "paypalOrderId:", paypalOrderId);
-    
+    console.log("🔄 Attempting to capture PayPal Order:", paypalOrderId);
+
     const order = await Order.findById(orderId);
     
     if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found' });
+      return res.status(404).json({
+        success: false,
+        error: 'Order not found'
+      });
     }
 
-    const baseUrl = process.env.PAYPAL_MODE === 'sandbox' 
-      ? 'https://api-m.sandbox.paypal.com' 
-      : 'https://api-m.paypal.com';
-
-    const accessToken = await getPayPalAccessToken();
-
-    const response = await fetch(baseUrl + '/v2/checkout/orders/' + paypalOrderId + '/capture', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const data = await response.json();
-
-
-
+    const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
+    request.requestBody({});
     
-    if (data.status === 'COMPLETED') {
-      const actualTransactionId = response.result.purchase_units[0].payments.captures[0].id;
+    const response = await client().execute(request);
+    
+    if (response.result.status === 'COMPLETED') {
+      // ✅ SAFE EXTRACTION: যদি deep ID না পায়, তাহলে paypalOrderId কেই transaction ID হিসেবে ব্যবহার করবে
+      let actualTransactionId = paypalOrderId; 
+      try {
+        actualTransactionId = response.result.purchase_units[0].payments.captures[0].id;
+      } catch (extractErr) {
+        console.warn("⚠️ Could not extract deep transaction ID, using paypalOrderId instead:", extractErr.message);
+      }
 
+      // অর্ডার আপডেট করা
       order.paymentMethod = 'paypal';
       order.paymentStatus = 'paid';
-      order.transactionId = actualTransactionId;
+      order.transactionId = actualTransactionId; // ✅ সেফ ভেরিয়েবল ব্যবহার করা হচ্ছে
       order.status = 'processing';
       order.paidAt = Date.now();
       
       await order.save();
-      console.log("✅ Payment captured and order updated");
 
-      // Send email (non-critical)
+      // Send payment success email (Optional but good)
       try {
         const { sendPaymentSuccess } = require('../utils/emailService');
         const User = require('../models/User');
@@ -156,8 +150,8 @@ exports.capturePayment = async (req, res) => {
         if (user) {
           sendPaymentSuccess(user, order);
         }
-      } catch (emailErr) {
-        console.error('Email send failed (non-critical):', emailErr.message);
+      } catch (err) {
+        console.error('Email send failed (non-critical):', err.message);
       }
 
       res.json({
@@ -166,18 +160,17 @@ exports.capturePayment = async (req, res) => {
         order
       });
     } else {
-      console.error("❌ Payment not completed. Status:", data.status);
       res.status(400).json({
         success: false,
-        error: 'Payment not completed. Status: ' + data.status
+        error: 'Payment not completed. Status: ' + response.result.status
       });
     }
 
   } catch (err) {
-    console.error("❌ PAYPAL CAPTURE ERROR:", err.message);
+    console.error("❌ BACKEND PAYPAL CAPTURE ERROR:", err); // এই লগটি Render এ সমস্যা দেখাবে
     res.status(500).json({
       success: false,
-      error: err.message || 'Payment capture failed'
+      error: err.message || 'Payment capture failed on server'
     });
   }
 };
