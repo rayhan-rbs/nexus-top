@@ -91,68 +91,77 @@ exports.createOrder = async (req, res) => {
 exports.capturePayment = async (req, res) => {
   try {
     const { orderId, paypalOrderId } = req.body;
-    
-    console.log('📥 Capturing payment for order:', orderId, 'PayPal Order:', paypalOrderId);
-    
+    console.log("🔵 [PAYPAL] Attempting to capture. DB Order ID:", orderId, "| PayPal Order ID:", paypalOrderId);
+
+    // ১. ডাটাবেস থেকে অর্ডার খুঁজে বের করা
     const order = await Order.findById(orderId);
-    
     if (!order) {
-      console.error('❌ Order not found:', orderId);
-      return res.status(404).json({ success: false, error: 'Order not found' });
+      console.error("❌ [PAYPAL] Order not found in DB for ID:", orderId);
+      return res.status(404).json({ success: false, error: 'Order not found in database' });
     }
 
+    // ২. PayPal API কল করে পেমেন্ট ক্যাপচার করা
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
     request.requestBody({});
-    
     const response = await client().execute(request);
     
-    console.log('📊 PayPal response status:', response.result.status);
-    
+    console.log("🟢 [PAYPAL] Capture Response Status:", response.result.status);
+
     if (response.result.status === 'COMPLETED') {
-      // ✅ নিরাপদভাবে Transaction ID বের করা
-      let actualTransactionId = paypalOrderId; 
+      
+      // ৩. সঠিক Transaction ID (Capture ID) বের করা
+      let actualTransactionId = paypalOrderId; // ফলব্যাক হিসেবে Order ID রাখা হলো
+      
       try {
-        if (response.result.purchase_units && 
-            response.result.purchase_units[0] &&
-            response.result.purchase_units[0].payments && 
-            response.result.purchase_units[0].payments.captures &&
-            response.result.purchase_units[0].payments.captures[0]) {
-          actualTransactionId = response.result.purchase_units[0].payments.captures[0].id;
-          console.log('✅ Extracted Transaction ID:', actualTransactionId);
+        // PayPal রেসপন্স থেকে নিরাপদে Capture ID নেওয়া
+        const captures = response.result?.purchase_units?.[0]?.payments?.captures;
+        if (captures && captures.length > 0) {
+          actualTransactionId = captures[0].id;
+          console.log("✅ [PAYPAL] Successfully extracted Capture ID:", actualTransactionId);
+        } else {
+          console.warn("⚠️ [PAYPAL] No captures array found, using Order ID as fallback");
         }
       } catch (extractErr) {
-        console.warn('⚠️ Could not extract transaction ID:', extractErr.message);
+        console.error("❌ [PAYPAL] Error extracting Capture ID:", extractErr.message);
       }
 
-      // অর্ডার আপডেট করা
+      // ৪. MongoDB-তে ডেটা আপডেট করা
+      console.log("💾 [MONGODB] Updating order with new payment data...");
       order.paymentMethod = 'paypal';
-      order.paymentStatus = 'paid';
-      order.transactionId = actualTransactionId;
-      order.status = 'processing';
+      order.paymentStatus = 'paid'; // ⚠️ এটি খুব জরুরি, নাহলে ফ্রন্টএন্ডে 'Pay Now' বাটন থেকে যাবে
+      order.transactionId = actualTransactionId; // ✅ এখন এখানে সঠিক Sandbox TXN ID সেভ হবে
+      order.status = 'processing'; // অথবা 'completed', আপনার বিজনেস লজিক অনুযায়ী
       order.paidAt = Date.now();
-      
-      await order.save();
-      console.log('✅ Order updated in database');
 
-      res.json({
+      // ডাটাবেসে সেভ করা
+      await order.save();
+      console.log("✅ [MONGODB] Order saved successfully to database!");
+
+      // (ঐচ্ছিক) ইমেইল পাঠানোর লজিক এখানে থাকলে তা রাখতে পারেন
+
+      return res.json({
         success: true,
-        message: 'Payment successful',
+        message: 'Payment successful and saved to database',
         order
       });
+
     } else {
-      console.error('❌ Payment not completed. Status:', response.result.status);
-      res.status(400).json({
+      console.error("❌ [PAYPAL] Payment not completed. Status:", response.result.status);
+      return res.status(400).json({
         success: false,
         error: 'Payment not completed. Status: ' + response.result.status
       });
     }
 
   } catch (err) {
-    console.error('❌ BACKEND PAYPAL CAPTURE ERROR:', err.message);
-    console.error('❌ Full error:', err);
-    res.status(500).json({
+    // ⚠️ যদি এখানে কোনো এরর প্রিন্ট হয়, তাহলেই বুঝবেন কেন MongoDB-তে সেভ হচ্ছে না
+    console.error("❌❌❌ [CRITICAL ERROR] IN CAPTURE PAYMENT ❌❌❌");
+    console.error("Error Message:", err.message);
+    console.error("Full Error Object:", err);
+    
+    return res.status(500).json({
       success: false,
-      error: err.message || 'Payment capture failed'
+      error: err.message || 'Payment capture failed on server'
     });
   }
 };
