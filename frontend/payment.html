@@ -571,42 +571,50 @@
         onApprove: async function(data, actions) {
           try {
             console.log("✅ User approved. Sending to backend for capture...", data.orderID);
-            
-            // currentOrderId ভেরিয়েবলটি স্কোপের ভেতরে আছে কিনা নিশ্চিত করুন
-            const targetOrderId = typeof currentOrderId !== 'undefined' ? currentOrderId : urlParams.get('orderId');
 
-            const token = authService.getToken();
+            // ১. ব্যাকএন্ডে ক্যাপচার রিকোয়েস্ট পাঠানো (Timeout সহ)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // ৮ সেকেন্ড টাইমআউট
+
             const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + authService.getToken()
               },
               body: JSON.stringify({
-                orderId: targetOrderId,
+                orderId: currentOrderId,
                 paypalOrderId: data.orderID
-              })
+              }),
+              signal: controller.signal
             });
 
-            // ✅ ক্রিটিক্যাল চেক: যদি ব্যাকএন্ড 500 এরর দেয়, তাহলে JSON পার্স করার চেষ্টা করবে না
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error("❌ Backend returned error:", res.status, errorText);
-              throw new Error(`সার্ভার এরর (${res.status})। দয়া করে Render লগ চেক করুন।`);
-            }
-
+            clearTimeout(timeoutId);
             const paymentData = await res.json();
 
-            if (!paymentData.success) {
-              throw new Error(paymentData.error || 'Payment verification failed');
+            // ২. যদি ব্যাকএন্ড থেকে এরর আসে
+            if (!res.ok || !paymentData.success) {
+              throw new Error(paymentData.error || 'Payment capture failed on server');
             }
 
-            alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
+            // ৩. সাকসেস হলে পপআপ বন্ধ করে রিডাইরেক্ট করা
+            console.log("✅ Payment captured successfully! Redirecting...");
+            alert('✅ পেমেন্ট সফল হয়েছে! অর্ডার আইডি: ' + (paymentData.order ? paymentData.order.orderId : currentOrderId));
+            
+            // পেজ রিডাইরেক্ট করলে PayPal পপআপ অটোমেটিক বন্ধ হয়ে যায়
             window.location.href = 'orders.html';
 
           } catch (err) {
             console.error('❌ Capture error:', err);
-            alert('❌ Payment failed: ' + err.message);
+            
+            if (err.name === 'AbortError') {
+              alert('⚠️ সার্ভার রেসপন্স দিতে অনেক সময় নিচ্ছে। অনুগ্রহ করে আপনার অর্ডার পেইজ চেক করুন, পেমেন্ট সফল হয়ে থাকতে পারে।');
+            } else {
+              alert('❌ পেমেন্ট ভেরিফাই করতে সমস্যা হয়েছে: ' + err.message);
+            }
+            
+            // এরর হলে পপআপ ম্যানুয়ালি বন্ধ করার অপশন দেওয়া
+            // actions.restart(); 
           }
         },
         
