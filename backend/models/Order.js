@@ -52,7 +52,7 @@ const orderSchema = new mongoose.Schema({
   // ৭. পেমেন্ট মেথড
   paymentMethod: {
     type: String,
-    enum: ['bkash', 'nagad', 'rocket', 'card', 'manual', 'demo'],
+    enum: ['bkash', 'nagad', 'rocket', 'card', 'manual', 'demo', 'paypal'],
     default: 'manual'
   },
 
