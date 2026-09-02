@@ -219,66 +219,124 @@
 
     // Load orders
     async function loadOrders() {
-      const result = await orderService.getMyOrders();
+      try {
+        const result = await orderService.getMyOrders();
+        
+        // লোডিং স্পিনার বন্ধ করা
+        const loadingEl = document.getElementById('ordersLoading');
+        if (loadingEl) loadingEl.style.display = 'none';
 
-      document.getElementById('ordersLoading').style.display = 'none';
+        if (!result.success) {
+          alert('Error: ' + (result.error || 'Failed to load orders'));
+          return;
+        }
 
-      if (!result.success) {
-        alert('Error: ' + result.error);
-        return;
-      }
+        // যদি কোনো অর্ডার না থাকে
+        if (!result.orders || result.orders.length === 0) {
+          const emptyEl = document.getElementById('emptyState');
+          if (emptyEl) emptyEl.style.display = 'block';
+          const listEl = document.getElementById('ordersList');
+          if (listEl) listEl.style.display = 'none';
+          return;
+        }
 
-      if (result.orders.length === 0) {
-        document.getElementById('emptyState').style.display = 'block';
-        return;
-      }
+        // অর্ডার লিস্ট দেখানো এবং আগের ডেটা ক্লিয়ার করা (Duplicate রোধ করতে)
+        const emptyEl = document.getElementById('emptyState');
+        if (emptyEl) emptyEl.style.display = 'none';
+        
+        const list = document.getElementById('ordersList');
+        list.style.display = 'flex';
+        list.innerHTML = ''; 
 
-      const list = document.getElementById('ordersList');
-      list.style.display = 'flex';
+        result.orders.forEach(order => {
+          const card = document.createElement('div');
+          card.className = 'order-card';
 
-      result.orders.forEach(order => {
-        const card = document.createElement('div');
-        card.className = 'order-card';
-        card.innerHTML = `
-          <div class="order-header">
-            <div>
-              <div class="order-id">#${order.orderId}</div>
-              <div class="order-date">${new Date(order.createdAt).toLocaleString('bn-BD')}</div>
-            </div>
-            <div class="order-status status-${order.status}">${order.status}</div>
-          </div>
-          <div class="order-body">
-            <div class="order-game-icon">${order.game.icon}</div>
-            <div class="order-info">
-              <h3>${order.game.title}</h3>
-              <p>${order.package.amount} ${order.game.currency} • Game ID: ${order.gameId}</p>
-            </div>
-            <div class="order-amount">
-              <div class="price">৳${order.totalAmount}</div>
-            </div>
-          </div>
-          ${order.status === 'pending' ? (() => {
+          // ✅ সেফটি চেক: যদি backend থেকে game/package ডেটা ঠিকমতো populate না হয়, তাহলে error দেখাবে না
+          const gameTitle = order.game?.title || 'Unknown Game';
+          const gameIcon = order.game?.icon || '🎮';
+          const currency = order.game?.currency || 'Coins';
+          const pkgAmount = order.package?.amount || '0';
+
+          // ✅ অ্যাকশন বাটন লজিক (Pay Now + Cancel)
+          let actionButtons = '';
+          
+          // যদি পেমেন্ট পেন্ডিং থাকে
+          if (order.paymentStatus === 'pending' || order.status === 'pending') {
             const orderTime = new Date(order.createdAt).getTime();
             const now = Date.now();
             const FIVE_MINUTES = 5 * 60 * 1000;
             const timeDiff = now - orderTime;
             const canCancel = timeDiff <= FIVE_MINUTES;
             const minutesLeft = Math.max(0, Math.ceil((FIVE_MINUTES - timeDiff) / 60000));
-            
-            return canCancel ? `
-              <div class="order-actions">
-                <button class="btn-small btn-cancel" onclick="cancelOrder('${order._id}')">Cancel Order</button>
-                <small style="color:var(--text-dim);font-size:11px;margin-left:8px">⏱️ ${minutesLeft} min left</small>
-              </div>
-            ` : `
-              <div class="order-actions">
-                <small style="color:#F59E0B;font-size:12px">⏱️ Cancellation window expired</small>
+
+            actionButtons = `
+              <div class="order-actions" style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                
+                <!-- ✅ Pay Now বাটন যোগ করা হয়েছে -->
+                <a href="payment.html?orderId=${order._id}" class="btn-pay-now" style="background: #10B981; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">
+                  💳 Pay Now
+                </a>
+                
+                ${canCancel ? `
+                  <button class="btn-cancel" onclick="cancelOrder('${order._id}')" style="background: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                    Cancel
+                  </button>
+                  <small style="color: var(--text-dim, #6B7280); font-size: 12px;">⏱️ ${minutesLeft} min left</small>
+                ` : `
+                  <small style="color: #F59E0B; font-size: 12px; font-weight: 500;">⏱️ Cancellation window expired</small>
+                `}
               </div>
             `;
-          })() : ''}
-        `;
-        list.appendChild(card);
-      });
+          } 
+          // যদি পেমেন্ট সাকসেসফুল হয়
+          else if (order.paymentStatus === 'paid' || order.status === 'processing' || order.status === 'completed') {
+            actionButtons = `
+              <div class="order-actions" style="margin-top: 15px;">
+                <small style="color: #10B981; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                  ✅ Payment Successful
+                </small>
+              </div>
+            `;
+          }
+
+          // কার্ডের HTML তৈরি করা
+          card.innerHTML = `
+            <div class="order-header">
+              <div>
+                <div class="order-id" style="font-weight: 700; color: var(--primary, #7C3AED);">#${order.orderId}</div>
+                <div class="order-date" style="font-size: 12px; color: var(--text-dim, #6B7280);">${new Date(order.createdAt).toLocaleString('bn-BD')}</div>
+              </div>
+              <div class="order-status status-${order.status}" style="text-transform: capitalize; font-weight: 600;">
+                ${order.status}
+              </div>
+            </div>
+            
+            <div class="order-body" style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+              <div class="order-game-icon" style="font-size: 32px;">${gameIcon}</div>
+              <div class="order-info" style="flex: 1;">
+                <h3 style="margin: 0; font-size: 16px;">${gameTitle}</h3>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-dim, #6B7280);">
+                  ${pkgAmount} ${currency} • ID: ${order.gameId}
+                </p>
+              </div>
+              <div class="order-amount">
+                <div class="price" style="font-size: 18px; font-weight: 700; color: #10B981;">৳${order.totalAmount}</div>
+              </div>
+            </div>
+            
+            ${actionButtons}
+          `;
+          
+          list.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Load orders error:', err);
+        const loadingEl = document.getElementById('ordersLoading');
+        if (loadingEl) loadingEl.style.display = 'none';
+        alert('Something went wrong while loading orders. Please refresh.');
+      }
     }
 
     // Cancel order

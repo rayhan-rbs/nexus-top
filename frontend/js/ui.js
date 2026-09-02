@@ -5,12 +5,11 @@
 
 
 // ===== RENDER GAMES =====
-// ===== RENDER GAMES =====
 function renderGames(games) {
   const grid = document.getElementById('gameGrid');
   grid.innerHTML = '';
 
-  if (games.length === 0) {
+  if (!games || games.length === 0) {
     grid.innerHTML = '<p style="text-align:center;color:var(--text-dim);grid-column:1/-1;padding:40px">কোনো গেম পাওয়া যায়নি</p>';
     return;
   }
@@ -18,10 +17,14 @@ function renderGames(games) {
   games.forEach(g => {
     const gameId = g.id || g.gameId;
     
-    // 👈 ইমেইজ থাকলে ইমেইজ দেখাবে, না থাকলে গ্র্যাডিয়েন্ট দেখাবে
-    let bgStyle = g.color;
+    // 👈 ইমেইজ এবং কালার হ্যান্ডলিং (Fallback সহ)
+    let bgStyle = g.color || 'linear-gradient(135deg, #7C3AED, #06B6D4)';
     if (g.image) {
-      const imageUrl = g.image.startsWith('http') ? g.image : API_BASE_URL + `${g.image}`;
+      // চেক করছে ইমেজটি কি ইতিমধ্যে http দিয়ে শুরু হচ্ছে (Cloudinary) নাকি লোকাল পাথ
+      const imageUrl = g.image.startsWith('http') 
+        ? g.image 
+        : (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL + g.image : g.image);
+        
       bgStyle = `linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.4) 100%), url('${imageUrl}')`;
     }
     
@@ -30,11 +33,11 @@ function renderGames(games) {
     card.innerHTML = `
       <div class="game-card-bg" style="background: ${bgStyle}; background-size: cover; background-position: center;"></div>
       <div class="game-card-content">
-        <span class="game-tag">${g.tag}</span>
+        <span class="game-tag">${g.tag || 'Game'}</span>
         <div class="game-title">${g.title}</div>
         <div class="game-meta">
           <span>Top-up Now →</span>
-          <span class="game-rating">★ ${g.rating}</span>
+          <span class="game-rating">★ ${g.rating || '4.5'}</span>
         </div>
       </div>
     `;
@@ -66,14 +69,14 @@ async function openGameDetail(id) {
     const g = await dataService.getGameById(id);
     
     if (!g) {
-      alert(' Game not found!');
+      alert('Game not found!');
       return;
     }
 
     console.log('✅ Game loaded:', g);
 
     // Get settings with safe fallback
-    let symbol = '৳'; // Default fallback
+    let symbol = '৳'; 
     try {
       const settings = await dataService.getSettings();
       if (settings && settings.currencySymbol) {
@@ -83,8 +86,22 @@ async function openGameDetail(id) {
       console.warn('⚠️ Using default currency symbol');
     }
 
-    // Update UI
-    document.getElementById('detailBg').style.background = g.color || 'linear-gradient(135deg,#7C3AED,#06B6D4)';
+    // 👈 ইমেইজ হ্যান্ডলিং ফর ডিটেইল পেজ (এখানে আগে ইমেইজ ছিল না, এখন ঠিক করা হয়েছে)
+    let detailBgStyle = g.color || 'linear-gradient(135deg, #7C3AED, #06B6D4)';
+    if (g.image) {
+      const imageUrl = g.image.startsWith('http') 
+        ? g.image 
+        : (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL + g.image : g.image);
+        
+      detailBgStyle = `linear-gradient(to bottom, rgba(10,10,15,0.7) 0%, rgba(10,10,15,0.95) 100%), url('${imageUrl}')`;
+    }
+
+    // Update UI Background
+    const detailBg = document.getElementById('detailBg');
+    detailBg.style.background = detailBgStyle;
+    detailBg.style.backgroundSize = 'cover';
+    detailBg.style.backgroundPosition = 'center';
+
     document.getElementById('detailTitle').textContent = g.title;
     document.getElementById('detailDesc').textContent = g.description || '';
     document.getElementById('dsRating').textContent = g.rating || '4.5';
