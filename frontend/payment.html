@@ -536,33 +536,43 @@
         
         createOrder: async function() {
           try {
+            console.log("Creating PayPal order for:", orderId);
             const token = authService.getToken();
+            
             const res = await fetch(API_BASE_URL + '/api/payments/paypal/create-order', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
               },
-              body: JSON.stringify({ orderId })
+              body: JSON.stringify({ orderId: orderId })
             });
-            
+
+            if (!res.ok) {
+              throw new Error("সার্ভার রেসপন্স করেনি। দয়া করে আবার চেষ্টা করুন।");
+            }
+
             const data = await res.json();
-            if (!data.success) throw new Error(data.error);
             
-            return data.orderId;
+            if (!data.success || !data.orderId) {
+              throw new Error(data.error || "অর্ডার তৈরি করতে ব্যর্থ হয়েছে");
+            }
+            
+            console.log("✅ PayPal Order ID received:", data.orderId);
+            return data.orderId; // এটি PayPal কে পপআপ ওপেন করতে সাহায্য করবে
+
           } catch (err) {
             console.error('Create order error:', err);
-            alert('❌ Error: ' + err.message);
+            alert('❌ সমস্যা: ' + err.message + '\n\n(সার্ভার ঘুমিয়ে থাকতে পারে। নতুন ট্যাবে nexustop-api.onrender.com ওপেন করে লোড হলে আবার চেষ্টা করুন)');
+            // রিটার্ন না করলে PayPal পপআপ করবে না, যা সঠিক আচরণ
           }
         },
         
         onApprove: async function(data, actions) {
           try {
-            // ❌ এই লাইনটি মুছে ফেলুন: const captureData = await actions.order.capture();
-            // এটি সার্ভার-সাইড ইন্টিগ্রেশনের সাথে কনফ্লিক্ট করে।
-
-            // ✅ সরাসরি ব্যাকএন্ডে ক্যাপচার রিকোয়েস্ট পাঠান
+            console.log("Approving payment with PayPal Order ID:", data.orderID);
             const token = authService.getToken();
+            
             const res = await fetch(API_BASE_URL + '/api/payments/paypal/capture', {
               method: 'POST',
               headers: {
@@ -570,31 +580,33 @@
                 'Authorization': 'Bearer ' + token
               },
               body: JSON.stringify({
-                orderId: orderId,          // আপনার ডাটাবেসের অর্ডার আইডি
-                paypalOrderId: data.orderID // PayPal এর তৈরি করা অর্ডার আইডি
+                orderId: orderId,
+                paypalOrderId: data.orderID
               })
             });
-            
+
             const paymentData = await res.json();
             
             if (!paymentData.success) {
-              throw new Error(paymentData.error || 'Payment capture failed');
+              throw new Error(paymentData.error || "পেমেন্ট ভেরিফাই করতে ব্যর্থ হয়েছে");
             }
             
-            // ✅ সাকসেস হলে পপআপ অটোমেটিক বন্ধ হয়ে যাবে এবং রিডাইরেক্ট হবে
-            alert('✅ Payment successful! Order ID: ' + paymentData.order.orderId);
-            window.location.href = 'orders.html';
+            alert('✅ পেমেন্ট সফল হয়েছে! অর্ডার আইডি: ' + paymentData.order.orderId);
+            
+            // ✅ সফল হলে পপআপ অটোমেটিক বন্ধ হয়ে এই পেইজে রিডাইরেক্ট করবে
+            window.location.href = 'orders.html'; 
             
           } catch (err) {
             console.error('Capture error:', err);
-            alert('❌ Payment failed: ' + err.message);
+            alert('❌ পেমেন্ট ফেইল: ' + err.message);
           }
         },
         
         onError: function(err) {
           console.error('PayPal Error:', err);
-          alert('❌ PayPal Error: ' + err.message);
+          alert('❌ PayPal এরর: পপআপ ব্লক করা আছে বা নেটওয়ার্ক সমস্যা।');
         }
+
       }).render('#paypal-button-container');
     }
 
